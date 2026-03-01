@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/providers/backup_providers.dart';
+import '../../../router/app_router.dart';
+import '../../../shared/theme/app_colors.dart';
+
+class BackupStatusBanner extends ConsumerWidget {
+  const BackupStatusBanner({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lastBackup = ref.watch(lastBackupProvider);
+
+    return lastBackup.when(
+      data: (log) {
+        if (log == null) {
+          return _Banner(
+            color: AppColors.error,
+            icon: Icons.cloud_off_outlined,
+            message: 'No backup yet. Tap to set up backup.',
+            onTap: () => context.go(AppRoutes.backupSettings),
+          );
+        }
+
+        final daysSince = DateTime.now().difference(log.backupDate).inDays;
+
+        if (daysSince < 3) return const SizedBox.shrink();
+
+        final color = daysSince < 7
+            ? AppColors.warning
+            : daysSince < 14
+                ? const Color(0xFFFF6D00)
+                : AppColors.error;
+
+        return _Banner(
+          color: color,
+          icon: Icons.cloud_outlined,
+          message: 'Last backup: ${daysSince == 1 ? '1 day' : '$daysSince days'} ago. Backup now →',
+          onTap: () => context.go(AppRoutes.backupSettings),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _Banner extends StatelessWidget {
+  final Color color;
+  final IconData icon;
+  final String message;
+  final VoidCallback onTap;
+
+  const _Banner({
+    required this.color,
+    required this.icon,
+    required this.message,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message, style: TextStyle(color: color, fontSize: 13)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
