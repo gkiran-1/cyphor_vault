@@ -15,7 +15,7 @@ extension GetPasswordEntryCollection on Isar {
 
 const PasswordEntrySchema = CollectionSchema(
   name: r'PasswordEntry',
-  id: 7629463826840264306,
+  id: 7629463826840264704,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,

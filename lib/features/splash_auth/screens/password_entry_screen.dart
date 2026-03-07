@@ -34,7 +34,7 @@ class _PasswordEntryScreenState extends ConsumerState<PasswordEntryScreen> {
 
     await ref
         .read(authStateProvider.notifier)
-        .loginWithPassword(_passwordController.text);
+        .loginWithPIN(_passwordController.text);
 
     if (!mounted) return;
     final authState = ref.read(authStateProvider);

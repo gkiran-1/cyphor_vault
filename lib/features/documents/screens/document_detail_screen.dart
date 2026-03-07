@@ -6,8 +6,9 @@ import '../../../core/utils/formatters.dart';
 import '../../../router/app_router.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/blurred_text.dart';
+import '../../../shared/widgets/privacy_indicator_banner.dart';
 
-class DocumentDetailScreen extends StatelessWidget {
+class DocumentDetailScreen extends StatefulWidget {
   final int id;
   final String documentType;
   final Map<String, dynamic> data;
@@ -19,8 +20,21 @@ class DocumentDetailScreen extends StatelessWidget {
     required this.data,
   });
 
+  @override
+  State<DocumentDetailScreen> createState() => _DocumentDetailScreenState();
+}
+
+class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
+  bool _anySensitiveRevealed = false;
+
+  void _onSensitiveReveal(bool revealed) {
+    setState(() {
+      _anySensitiveRevealed = revealed;
+    });
+  }
+
   String get _title {
-    switch (documentType) {
+    switch (widget.documentType) {
       case AppConstants.docAadhaar:
         return 'Aadhaar Card';
       case AppConstants.docPAN:
@@ -47,20 +61,38 @@ class DocumentDetailScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => context.go(AppRoutes.addDocument,
-                extra: {'id': id, 'type': documentType, 'data': data}),
+            onPressed: () => context.go(AppRoutes.addDocument, extra: {
+              'id': widget.id,
+              'type': widget.documentType,
+              'data': widget.data
+            }),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: _buildContent(),
+      body: Column(
+        children: [
+          if (_anySensitiveRevealed)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: PrivacyIndicatorBanner(
+                onHide: () {
+                  _onSensitiveReveal(false);
+                },
+              ),
+            ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: _buildContent(),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   List<Widget> _buildContent() {
-    switch (documentType) {
+    switch (widget.documentType) {
       case AppConstants.docAadhaar:
         return _aadhaarFields();
       case AppConstants.docPAN:
@@ -72,67 +104,75 @@ class DocumentDetailScreen extends StatelessWidget {
 
   List<Widget> _aadhaarFields() => [
         _Section(children: [
-          _Tile('Full Name', data['holderName'] ?? '', sensitive: false),
-          _SensitiveTile('Aadhaar Number', data['aadhaarNumber'] ?? ''),
-          _Tile('Date of Birth', data['dateOfBirth'] ?? '', sensitive: false),
-          _Tile('Address', data['address'] ?? '', sensitive: false),
+          _Tile('Full Name', widget.data['holderName'] ?? '', sensitive: false),
+          _SensitiveTile('Aadhaar Number', widget.data['aadhaarNumber'] ?? '',
+              onReveal: _onSensitiveReveal),
+          _Tile('Date of Birth', widget.data['dateOfBirth'] ?? '',
+              sensitive: false),
+          _Tile('Address', widget.data['address'] ?? '', sensitive: false),
         ]),
-        if (data['imageFrontBase64'] != null) ...[
+        if (widget.data['imageFrontBase64'] != null) ...[
           const SizedBox(height: 16),
-          _ImageSection('Front', data['imageFrontBase64'] as String),
+          _ImageSection('Front', widget.data['imageFrontBase64'] as String),
         ],
-        if (data['imageBackBase64'] != null) ...[
+        if (widget.data['imageBackBase64'] != null) ...[
           const SizedBox(height: 16),
-          _ImageSection('Back', data['imageBackBase64'] as String),
+          _ImageSection('Back', widget.data['imageBackBase64'] as String),
         ],
-        if ((data['notes'] as String? ?? '').isNotEmpty) ...[
+        if ((widget.data['notes'] as String? ?? '').isNotEmpty) ...[
           const SizedBox(height: 16),
           _Section(children: [
-            _Tile('Notes', data['notes'] ?? '', sensitive: false)
+            _Tile('Notes', widget.data['notes'] ?? '', sensitive: false)
           ]),
         ],
       ];
 
   List<Widget> _panFields() => [
         _Section(children: [
-          _Tile('Full Name', data['holderName'] ?? '', sensitive: false),
-          _SensitiveTile('PAN Number', data['panNumber'] ?? ''),
-          _Tile('Date of Birth', data['dateOfBirth'] ?? '', sensitive: false),
-          _Tile("Father's Name", data['fatherName'] ?? '', sensitive: false),
+          _Tile('Full Name', widget.data['holderName'] ?? '', sensitive: false),
+          _SensitiveTile('PAN Number', widget.data['panNumber'] ?? '',
+              onReveal: _onSensitiveReveal),
+          _Tile('Date of Birth', widget.data['dateOfBirth'] ?? '',
+              sensitive: false),
+          _Tile("Father's Name", widget.data['fatherName'] ?? '',
+              sensitive: false),
         ]),
-        if (data['imageFrontBase64'] != null) ...[
+        if (widget.data['imageFrontBase64'] != null) ...[
           const SizedBox(height: 16),
-          _ImageSection('Front', data['imageFrontBase64'] as String),
+          _ImageSection('Front', widget.data['imageFrontBase64'] as String),
         ],
       ];
 
   List<Widget> _cardFields() {
-    final cardNum = data['cardNumber'] as String? ?? '';
+    final cardNum = widget.data['cardNumber'] as String? ?? '';
     final masked = cardNum.length >= 4
         ? '•••• •••• •••• ${cardNum.substring(cardNum.length - 4)}'
         : cardNum;
     return [
-      _CardPreview(data: data, masked: masked),
+      _CardPreview(data: widget.data, masked: masked),
       const SizedBox(height: 16),
       _Section(children: [
-        _SensitiveTile('Card Number', cardNum),
-        _SensitiveTile('CVV', data['cvv'] ?? ''),
-        if ((data['pin'] as String? ?? '').isNotEmpty)
-          _SensitiveTile('PIN', data['pin']!),
+        _SensitiveTile('Card Number', cardNum, onReveal: _onSensitiveReveal),
+        _SensitiveTile('CVV', widget.data['cvv'] ?? '',
+            onReveal: _onSensitiveReveal),
+        if ((widget.data['pin'] as String? ?? '').isNotEmpty)
+          _SensitiveTile('PIN', widget.data['pin']!,
+              onReveal: _onSensitiveReveal),
         _Tile('Expiry',
-            '${data['expiryMonth'] ?? ''}/${data['expiryYear'] ?? ''}',
+            '${widget.data['expiryMonth'] ?? ''}/${widget.data['expiryYear'] ?? ''}',
             sensitive: false),
-        _Tile('Bank', data['bankName'] ?? '', sensitive: false),
-        _Tile('Network', (data['cardNetwork'] as String? ?? '').toUpperCase(),
+        _Tile('Bank', widget.data['bankName'] ?? '', sensitive: false),
+        _Tile('Network',
+            (widget.data['cardNetwork'] as String? ?? '').toUpperCase(),
             sensitive: false),
       ]),
-      if (data['imageFrontBase64'] != null) ...[
+      if (widget.data['imageFrontBase64'] != null) ...[
         const SizedBox(height: 16),
-        _ImageSection('Front', data['imageFrontBase64'] as String),
+        _ImageSection('Front', widget.data['imageFrontBase64'] as String),
       ],
-      if (data['imageBackBase64'] != null) ...[
+      if (widget.data['imageBackBase64'] != null) ...[
         const SizedBox(height: 16),
-        _ImageSection('Back', data['imageBackBase64'] as String),
+        _ImageSection('Back', widget.data['imageBackBase64'] as String),
       ],
     ];
   }
@@ -187,10 +227,13 @@ class _Tile extends StatelessWidget {
   }
 }
 
+typedef SensitiveRevealCallback = void Function(bool revealed);
+
 class _SensitiveTile extends StatelessWidget {
   final String label;
   final String value;
-  const _SensitiveTile(this.label, this.value);
+  final SensitiveRevealCallback? onReveal;
+  const _SensitiveTile(this.label, this.value, {this.onReveal});
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +246,10 @@ class _SensitiveTile extends StatelessWidget {
               style: const TextStyle(
                   color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(height: 6),
-          BlurredText(text: value),
+          BlurredText(
+            text: value,
+            onReveal: onReveal,
+          ),
         ],
       ),
     );

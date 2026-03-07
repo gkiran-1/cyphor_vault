@@ -41,19 +41,16 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     });
 
     try {
-      final valid = await AuthService.instance.verifyPassword(_oldCtrl.text);
+      final valid = await AuthService.instance.verifyPIN(_oldCtrl.text);
       if (!valid) {
         setState(() {
-          _error = 'Current password is incorrect';
+          _error = 'Current PIN is incorrect';
           _loading = false;
         });
         return;
       }
 
-      await KeyManager.instance.rotatePasswordKey(
-        oldPassword: _oldCtrl.text,
-        newPassword: _newCtrl.text,
-      );
+      await KeyManager.instance.changePIN(_newCtrl.text);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

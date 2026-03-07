@@ -42,8 +42,6 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
     setState(() => _loading = true);
 
     await ref.read(authStateProvider.notifier).createAccount(
-          email: _emailCtrl.text.trim(),
-          password: _passwordCtrl.text,
           pin: _pinCtrl.text,
         );
 
