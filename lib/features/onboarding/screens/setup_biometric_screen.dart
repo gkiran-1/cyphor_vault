@@ -5,7 +5,7 @@ import '../../../core/auth/biometric_service.dart';
 import '../../../core/database/isar_service.dart';
 import '../../../core/encryption/key_manager.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class SetupBiometricScreen extends ConsumerStatefulWidget {
   const SetupBiometricScreen({super.key});
@@ -43,7 +43,7 @@ class _SetupBiometricScreenState extends ConsumerState<SetupBiometricScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Biometric Setup'),
         automaticallyImplyLeading: true,
@@ -59,10 +59,10 @@ class _SetupBiometricScreenState extends ConsumerState<SetupBiometricScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Enable biometric unlock for fast, secure access to your vault.',
                 style: TextStyle(
-                    color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                    color: context.palette.textSecondary, fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 40),
               _OptionCard(
@@ -84,8 +84,8 @@ class _SetupBiometricScreenState extends ConsumerState<SetupBiometricScreen> {
               Center(
                 child: TextButton(
                   onPressed: () => context.go(AppRoutes.setupBackup),
-                  child: const Text('Skip for now',
-                      style: TextStyle(color: AppColors.textSecondary)),
+                  child: Text('Skip for now',
+                      style: TextStyle(color: context.palette.textSecondary)),
                 ),
               ),
             ],
@@ -120,17 +120,17 @@ class _OptionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: enabled ? AppColors.success : AppColors.border,
+            color: enabled ? context.palette.success : context.palette.border,
             width: enabled ? 1.5 : 1,
           ),
         ),
         child: Row(
           children: [
             Icon(icon,
-                color: enabled ? AppColors.success : AppColors.primary,
+                color: enabled ? context.palette.success : context.palette.primary,
                 size: 32),
             const SizedBox(width: 16),
             Expanded(
@@ -138,26 +138,26 @@ class _OptionCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
-                      style: const TextStyle(
-                          color: AppColors.textPrimary,
+                      style: TextStyle(
+                          color: context.palette.textPrimary,
                           fontWeight: FontWeight.w600)),
                   const SizedBox(height: 2),
                   Text(subtitle,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13)),
+                      style: TextStyle(
+                          color: context.palette.textSecondary, fontSize: 13)),
                 ],
               ),
             ),
             if (loading)
-              const SizedBox(
+              SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.primary))
+                      strokeWidth: 2, color: context.palette.primary))
             else if (enabled)
-              const Icon(Icons.check_circle, color: AppColors.success)
+              Icon(Icons.check_circle, color: context.palette.success)
             else
-              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+              Icon(Icons.chevron_right, color: context.palette.textSecondary),
           ],
         ),
       ),

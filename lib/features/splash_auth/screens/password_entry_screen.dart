@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/auth_providers.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class PasswordEntryScreen extends ConsumerStatefulWidget {
   const PasswordEntryScreen({super.key});
@@ -49,9 +49,9 @@ class _PasswordEntryScreenState extends ConsumerState<PasswordEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.palette.background,
         title: const Text('Master Password'),
       ),
       body: SafeArea(
@@ -62,16 +62,16 @@ class _PasswordEntryScreenState extends ConsumerState<PasswordEntryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Enter your master password to unlock CipherBox.',
                   style:
-                      TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                      TextStyle(color: context.palette.textSecondary, fontSize: 14),
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscure,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Master Password',
                     suffixIcon: Row(
@@ -82,12 +82,12 @@ class _PasswordEntryScreenState extends ConsumerState<PasswordEntryScreen> {
                               _obscure
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: AppColors.textSecondary),
+                              color: context.palette.textSecondary),
                           onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.copy_outlined,
-                              size: 20, color: AppColors.textSecondary),
+                          icon: Icon(Icons.copy_outlined,
+                              size: 20, color: context.palette.textSecondary),
                           tooltip: 'Copy',
                           onPressed: () async {
                             final text = _passwordController.text;
@@ -109,8 +109,8 @@ class _PasswordEntryScreenState extends ConsumerState<PasswordEntryScreen> {
                 if (_error != null) ...[
                   const SizedBox(height: 12),
                   Text(_error!,
-                      style: const TextStyle(
-                          color: AppColors.error, fontSize: 13)),
+                      style: TextStyle(
+                          color: context.palette.error, fontSize: 13)),
                 ],
                 const SizedBox(height: 32),
                 ElevatedButton(

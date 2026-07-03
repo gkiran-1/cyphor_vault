@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/constants.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class NoteDetailScreen extends StatelessWidget {
   final int id;
@@ -18,18 +18,18 @@ class NoteDetailScreen extends StatelessWidget {
     final isLink = category == AppConstants.noteImportantLink;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.notes),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () =>
-                context.go(AppRoutes.addNote, extra: {'id': id, 'data': data}),
+                context.push(AppRoutes.addNote, extra: {'id': id, 'data': data}),
           ),
         ],
       ),
@@ -42,14 +42,14 @@ class NoteDetailScreen extends StatelessWidget {
               children: [
                 Icon(
                   isLink ? Icons.link_rounded : Icons.sticky_note_2_outlined,
-                  color: isLink ? AppColors.primary : const Color(0xFFFF9800),
+                  color: isLink ? context.palette.primary : const Color(0xFFFF9800),
                   size: 18,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   isLink ? 'Important Link' : 'Note',
-                  style: const TextStyle(
-                      color: AppColors.textSecondary, fontSize: 13),
+                  style: TextStyle(
+                      color: context.palette.textSecondary, fontSize: 13),
                 ),
               ],
             ),
@@ -58,14 +58,14 @@ class NoteDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.palette.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.palette.border),
               ),
               child: SelectableText(
                 content,
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontSize: 15, height: 1.6),
+                style: TextStyle(
+                    color: context.palette.textPrimary, fontSize: 15, height: 1.6),
               ),
             ),
           ],

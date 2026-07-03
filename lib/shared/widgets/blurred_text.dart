@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/auth/biometric_service.dart';
 import '../../core/utils/constants.dart';
-import '../../shared/theme/app_colors.dart';
+import '../../shared/theme/app_palette.dart';
 
 typedef SensitiveRevealCallback = void Function(bool revealed);
 
@@ -73,11 +73,11 @@ class _BlurredTextState extends State<BlurredText> {
                   : Text(
                       '•' * widget.text.replaceAll(' ', '').length,
                       style: widget.style?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: context.palette.textSecondary,
                             letterSpacing: 2,
                           ) ??
-                          const TextStyle(
-                            color: AppColors.textSecondary,
+                          TextStyle(
+                            color: context.palette.textSecondary,
                             letterSpacing: 2,
                           ),
                     ),
@@ -89,7 +89,7 @@ class _BlurredTextState extends State<BlurredText> {
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
                 size: 20,
-                color: AppColors.textSecondary,
+                color: context.palette.textSecondary,
               ),
               tooltip: _revealed ? 'Hide' : 'Reveal',
               onPressed: _revealed ? _hide : _reveal,
@@ -98,8 +98,8 @@ class _BlurredTextState extends State<BlurredText> {
             ),
             const SizedBox(width: 4),
             IconButton(
-              icon: const Icon(Icons.copy_outlined,
-                  size: 20, color: AppColors.textSecondary),
+              icon: Icon(Icons.copy_outlined,
+                  size: 20, color: context.palette.textSecondary),
               tooltip: 'Copy',
               onPressed: _revealed
                   ? () async {

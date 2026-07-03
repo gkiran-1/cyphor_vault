@@ -5,6 +5,7 @@ import 'collections/document_entry.dart';
 import 'collections/note_entry.dart';
 import 'collections/password_entry.dart';
 import 'collections/backup_log.dart';
+import 'collections/page_entry.dart';
 
 class IsarService {
   IsarService._();
@@ -29,6 +30,7 @@ class IsarService {
         NoteEntrySchema,
         PasswordEntrySchema,
         BackupLogSchema,
+        PageEntrySchema,
       ],
       directory: dir.path,
       name: 'cipherbox',
@@ -153,6 +155,7 @@ class IsarService {
       await db.passwordEntrys.clear();
       await db.backupLogs.clear();
       await db.userProfiles.clear();
+      await db.pageEntrys.clear();
     });
   }
 
@@ -161,6 +164,29 @@ class IsarService {
       'documents': await getDocumentCount(),
       'notes': await getNoteCount(),
       'passwords': await getPasswordCount(),
+      'pages': await getPageCount(),
     };
+  }
+
+  // ── PageEntry ──────────────────────────────────────────────────────────────
+
+  Future<List<PageEntry>> getAllPages() async {
+    return db.pageEntrys.where().sortByCreatedAtDesc().findAll();
+  }
+
+  Future<void> savePage(PageEntry entry) async {
+    await db.writeTxn(() async {
+      await db.pageEntrys.put(entry);
+    });
+  }
+
+  Future<void> deletePage(int id) async {
+    await db.writeTxn(() async {
+      await db.pageEntrys.delete(id);
+    });
+  }
+
+  Future<int> getPageCount() async {
+    return db.pageEntrys.count();
   }
 }

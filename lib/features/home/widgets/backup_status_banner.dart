@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/backup_providers.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class BackupStatusBanner extends ConsumerWidget {
   const BackupStatusBanner({super.key});
@@ -16,10 +16,10 @@ class BackupStatusBanner extends ConsumerWidget {
       data: (log) {
         if (log == null) {
           return _Banner(
-            color: AppColors.error,
+            color: context.palette.error,
             icon: Icons.cloud_off_outlined,
             message: 'No backup yet. Tap to set up backup.',
-            onTap: () => context.go(AppRoutes.backupSettings),
+            onTap: () => context.push(AppRoutes.backupSettings),
           );
         }
 
@@ -28,10 +28,10 @@ class BackupStatusBanner extends ConsumerWidget {
         if (daysSince < 3) return const SizedBox.shrink();
 
         final color = daysSince < 7
-            ? AppColors.warning
+            ? context.palette.warning
             : daysSince < 14
                 ? const Color(0xFFFF6D00)
-                : AppColors.error;
+                : context.palette.error;
 
         return _Banner(
           color: color,

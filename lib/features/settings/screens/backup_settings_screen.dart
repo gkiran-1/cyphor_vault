@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/isar_service.dart';
 import '../../../core/providers/backup_providers.dart';
-import '../../../core/utils/constants.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class BackupSettingsScreen extends ConsumerWidget {
   const BackupSettingsScreen({super.key});
@@ -14,7 +13,7 @@ class BackupSettingsScreen extends ConsumerWidget {
     final lastBackup = ref.watch(lastBackupProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: const Text('Backup & Restore')),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -29,40 +28,40 @@ class BackupSettingsScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           _Card(children: [
             ListTile(
-              leading: const Icon(Icons.cloud_upload_outlined, color: AppColors.primary),
-              title: const Text('Back Up Now',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-              subtitle: const Text('Upload encrypted backup to Google Drive',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              leading: Icon(Icons.cloud_upload_outlined, color: context.palette.primary),
+              title: Text('Back Up Now',
+                  style: TextStyle(color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
+              subtitle: Text('Upload encrypted backup to Google Drive',
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
               onTap: () => _triggerBackup(context, ref),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            Divider(color: context.palette.border, height: 1),
             ListTile(
-              leading: const Icon(Icons.cloud_download_outlined, color: AppColors.primary),
-              title: const Text('Restore from Drive',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-              subtitle: const Text('Restore your vault from a Google Drive backup',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              leading: Icon(Icons.cloud_download_outlined, color: context.palette.primary),
+              title: Text('Restore from Drive',
+                  style: TextStyle(color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
+              subtitle: Text('Restore your vault from a Google Drive backup',
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
               onTap: () => _showRestoreInfo(context),
             ),
           ]),
           const SizedBox(height: 16),
           _Card(children: [
             ListTile(
-              leading: const Icon(Icons.save_alt_outlined, color: AppColors.textSecondary),
-              title: const Text('Export to Device',
-                  style: TextStyle(color: AppColors.textPrimary)),
-              subtitle: const Text('Save .cipherbox file locally',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              leading: Icon(Icons.save_alt_outlined, color: context.palette.textSecondary),
+              title: Text('Export to Device',
+                  style: TextStyle(color: context.palette.textPrimary)),
+              subtitle: Text('Save .cipherbox file locally',
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
               onTap: () => _showComingSoon(context, 'Local export'),
             ),
-            const Divider(color: AppColors.border, height: 1),
+            Divider(color: context.palette.border, height: 1),
             ListTile(
-              leading: const Icon(Icons.upload_file_outlined, color: AppColors.textSecondary),
-              title: const Text('Import from File',
-                  style: TextStyle(color: AppColors.textPrimary)),
-              subtitle: const Text('Restore from a local .cipherbox file',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              leading: Icon(Icons.upload_file_outlined, color: context.palette.textSecondary),
+              title: Text('Import from File',
+                  style: TextStyle(color: context.palette.textPrimary)),
+              subtitle: Text('Restore from a local .cipherbox file',
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
               onTap: () => _showComingSoon(context, 'File import'),
             ),
           ]),
@@ -98,16 +97,16 @@ class BackupSettingsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Restore', style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
+        backgroundColor: context.palette.surface,
+        title: Text('Restore', style: TextStyle(color: context.palette.textPrimary)),
+        content: Text(
           'To restore, sign in to Google and select a .cipherbox backup. This feature requires Google Drive integration to be configured.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: context.palette.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: AppColors.primary)),
+            child: Text('OK', style: TextStyle(color: context.palette.primary)),
           ),
         ],
       ),
@@ -129,15 +128,15 @@ class _StatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: AppColors.primary, size: 18),
+          Icon(Icons.info_outline, color: context.palette.primary, size: 18),
           const SizedBox(width: 10),
-          Text(message, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+          Text(message, style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
         ],
       ),
     );
@@ -152,9 +151,9 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(children: children),
     );
@@ -174,24 +173,24 @@ class _BackupLogsSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 8),
               child: Text('Recent Backups',
                   style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+                      color: context.palette.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
             ),
             _Card(
               children: items.take(5).map((log) => ListTile(
                 leading: Icon(
                   log.status == 'success' ? Icons.check_circle_outline : Icons.error_outline,
-                  color: log.status == 'success' ? AppColors.success : AppColors.error,
+                  color: log.status == 'success' ? context.palette.success : context.palette.error,
                   size: 18,
                 ),
                 title: Text(DateFormatter.formatDateTime(log.backupDate),
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                    style: TextStyle(color: context.palette.textPrimary, fontSize: 14)),
                 subtitle: Text(
                   '${log.destination} · ${FileSizeFormatter.format(log.fileSize)} · ${log.itemCount} items',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 12),
                 ),
               )).toList(),
             ),

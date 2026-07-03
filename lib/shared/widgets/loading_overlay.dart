@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_palette.dart';
 
 class LoadingOverlay extends StatelessWidget {
   final String? message;
@@ -14,18 +14,18 @@ class LoadingOverlay extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.palette.border),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: AppColors.primary),
+              CircularProgressIndicator(color: context.palette.primary),
               if (message != null) ...[
                 const SizedBox(height: 16),
                 Text(message!,
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                    style: TextStyle(color: context.palette.textSecondary, fontSize: 14)),
               ],
             ],
           ),

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'password_entry.dart';
+part of 'page_entry.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'password_entry.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetPasswordEntryCollection on Isar {
-  IsarCollection<PasswordEntry> get passwordEntrys => this.collection();
+extension GetPageEntryCollection on Isar {
+  IsarCollection<PageEntry> get pageEntrys => this.collection();
 }
 
-const PasswordEntrySchema = CollectionSchema(
-  name: r'PasswordEntry',
-  id: 7629463826840264306,
+const PageEntrySchema = CollectionSchema(
+  name: r'PageEntry',
+  id: -1736692989501714157,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,
@@ -53,22 +53,22 @@ const PasswordEntrySchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _passwordEntryEstimateSize,
-  serialize: _passwordEntrySerialize,
-  deserialize: _passwordEntryDeserialize,
-  deserializeProp: _passwordEntryDeserializeProp,
+  estimateSize: _pageEntryEstimateSize,
+  serialize: _pageEntrySerialize,
+  deserialize: _pageEntryDeserialize,
+  deserializeProp: _pageEntryDeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
-  getId: _passwordEntryGetId,
-  getLinks: _passwordEntryGetLinks,
-  attach: _passwordEntryAttach,
+  getId: _pageEntryGetId,
+  getLinks: _pageEntryGetLinks,
+  attach: _pageEntryAttach,
   version: '3.1.0+1',
 );
 
-int _passwordEntryEstimateSize(
-  PasswordEntry object,
+int _pageEntryEstimateSize(
+  PageEntry object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -81,8 +81,8 @@ int _passwordEntryEstimateSize(
   return bytesCount;
 }
 
-void _passwordEntrySerialize(
-  PasswordEntry object,
+void _pageEntrySerialize(
+  PageEntry object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -96,13 +96,13 @@ void _passwordEntrySerialize(
   writer.writeString(offsets[6], object.uuid);
 }
 
-PasswordEntry _passwordEntryDeserialize(
+PageEntry _pageEntryDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = PasswordEntry();
+  final object = PageEntry();
   object.createdAt = reader.readDateTime(offsets[0]);
   object.dataIV = reader.readString(offsets[1]);
   object.encryptedData = reader.readString(offsets[2]);
@@ -114,7 +114,7 @@ PasswordEntry _passwordEntryDeserialize(
   return object;
 }
 
-P _passwordEntryDeserializeProp<P>(
+P _pageEntryDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -140,32 +140,30 @@ P _passwordEntryDeserializeProp<P>(
   }
 }
 
-Id _passwordEntryGetId(PasswordEntry object) {
+Id _pageEntryGetId(PageEntry object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _passwordEntryGetLinks(PasswordEntry object) {
+List<IsarLinkBase<dynamic>> _pageEntryGetLinks(PageEntry object) {
   return [];
 }
 
-void _passwordEntryAttach(
-    IsarCollection<dynamic> col, Id id, PasswordEntry object) {
+void _pageEntryAttach(IsarCollection<dynamic> col, Id id, PageEntry object) {
   object.id = id;
 }
 
-extension PasswordEntryQueryWhereSort
-    on QueryBuilder<PasswordEntry, PasswordEntry, QWhere> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhere> anyId() {
+extension PageEntryQueryWhereSort
+    on QueryBuilder<PageEntry, PageEntry, QWhere> {
+  QueryBuilder<PageEntry, PageEntry, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension PasswordEntryQueryWhere
-    on QueryBuilder<PasswordEntry, PasswordEntry, QWhereClause> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhereClause> idEqualTo(
-      Id id) {
+extension PageEntryQueryWhere
+    on QueryBuilder<PageEntry, PageEntry, QWhereClause> {
+  QueryBuilder<PageEntry, PageEntry, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -174,8 +172,7 @@ extension PasswordEntryQueryWhere
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+  QueryBuilder<PageEntry, PageEntry, QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -197,8 +194,7 @@ extension PasswordEntryQueryWhere
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhereClause> idGreaterThan(
-      Id id,
+  QueryBuilder<PageEntry, PageEntry, QAfterWhereClause> idGreaterThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -207,8 +203,7 @@ extension PasswordEntryQueryWhere
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhereClause> idLessThan(
-      Id id,
+  QueryBuilder<PageEntry, PageEntry, QAfterWhereClause> idLessThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -217,7 +212,7 @@ extension PasswordEntryQueryWhere
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterWhereClause> idBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -234,10 +229,10 @@ extension PasswordEntryQueryWhere
   }
 }
 
-extension PasswordEntryQueryFilter
-    on QueryBuilder<PasswordEntry, PasswordEntry, QFilterCondition> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      createdAtEqualTo(DateTime value) {
+extension PageEntryQueryFilter
+    on QueryBuilder<PageEntry, PageEntry, QFilterCondition> {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> createdAtEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'createdAt',
@@ -246,7 +241,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       createdAtGreaterThan(
     DateTime value, {
     bool include = false,
@@ -260,8 +255,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      createdAtLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> createdAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -274,8 +268,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      createdAtBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -292,8 +285,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVEqualTo(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -306,8 +298,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVGreaterThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -322,8 +313,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -338,8 +328,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -358,8 +347,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVStartsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -372,8 +360,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVEndsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -386,8 +373,9 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'dataIV',
@@ -397,8 +385,9 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'dataIV',
@@ -408,8 +397,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVIsEmpty() {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'dataIV',
@@ -418,8 +406,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      dataIVIsNotEmpty() {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> dataIVIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'dataIV',
@@ -428,7 +415,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -442,7 +429,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataGreaterThan(
     String value, {
     bool include = false,
@@ -458,7 +445,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataLessThan(
     String value, {
     bool include = false,
@@ -474,7 +461,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataBetween(
     String lower,
     String upper, {
@@ -494,7 +481,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -508,7 +495,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -522,7 +509,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -533,7 +520,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -544,7 +531,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -554,7 +541,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -564,7 +551,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -578,7 +565,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyGreaterThan(
     String value, {
     bool include = false,
@@ -594,7 +581,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyLessThan(
     String value, {
     bool include = false,
@@ -610,7 +597,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyBetween(
     String lower,
     String upper, {
@@ -630,7 +617,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyStartsWith(
     String value, {
     bool caseSensitive = true,
@@ -644,7 +631,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyEndsWith(
     String value, {
     bool caseSensitive = true,
@@ -658,7 +645,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -669,7 +656,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -680,7 +667,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -690,7 +677,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       encryptedItemKeyIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -700,7 +687,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -710,8 +697,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      idGreaterThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -724,7 +710,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> idLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -737,7 +723,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> idBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -754,8 +740,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVEqualTo(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -768,7 +753,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       itemKeyIVGreaterThan(
     String value, {
     bool include = false,
@@ -784,8 +769,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -800,8 +784,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -820,8 +803,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVStartsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -834,8 +816,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVEndsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -848,8 +829,9 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'itemKeyIV',
@@ -859,8 +841,9 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'itemKeyIV',
@@ -870,8 +853,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      itemKeyIVIsEmpty() {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> itemKeyIVIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'itemKeyIV',
@@ -880,7 +862,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       itemKeyIVIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
@@ -890,8 +872,8 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      updatedAtEqualTo(DateTime value) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> updatedAtEqualTo(
+      DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'updatedAt',
@@ -900,7 +882,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition>
       updatedAtGreaterThan(
     DateTime value, {
     bool include = false,
@@ -914,8 +896,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      updatedAtLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> updatedAtLessThan(
     DateTime value, {
     bool include = false,
   }) {
@@ -928,8 +909,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      updatedAtBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> updatedAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
@@ -946,7 +926,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> uuidEqualTo(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -959,8 +939,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidGreaterThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -975,8 +954,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidLessThan(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -991,7 +969,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> uuidBetween(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1010,8 +988,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidStartsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1024,8 +1001,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidEndsWith(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -1038,8 +1014,9 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'uuid',
@@ -1049,7 +1026,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition> uuidMatches(
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1061,8 +1038,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidIsEmpty() {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'uuid',
@@ -1071,8 +1047,7 @@ extension PasswordEntryQueryFilter
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterFilterCondition>
-      uuidIsNotEmpty() {
+  QueryBuilder<PageEntry, PageEntry, QAfterFilterCondition> uuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'uuid',
@@ -1082,228 +1057,215 @@ extension PasswordEntryQueryFilter
   }
 }
 
-extension PasswordEntryQueryObject
-    on QueryBuilder<PasswordEntry, PasswordEntry, QFilterCondition> {}
+extension PageEntryQueryObject
+    on QueryBuilder<PageEntry, PageEntry, QFilterCondition> {}
 
-extension PasswordEntryQueryLinks
-    on QueryBuilder<PasswordEntry, PasswordEntry, QFilterCondition> {}
+extension PageEntryQueryLinks
+    on QueryBuilder<PageEntry, PageEntry, QFilterCondition> {}
 
-extension PasswordEntryQuerySortBy
-    on QueryBuilder<PasswordEntry, PasswordEntry, QSortBy> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByCreatedAt() {
+extension PageEntryQuerySortBy on QueryBuilder<PageEntry, PageEntry, QSortBy> {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByCreatedAtDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByDataIV() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByDataIV() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dataIV', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByDataIVDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByDataIVDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dataIV', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByEncryptedData() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByEncryptedData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedData', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByEncryptedDataDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByEncryptedDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedData', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByEncryptedItemKey() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByEncryptedItemKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedItemKey', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy>
       sortByEncryptedItemKeyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedItemKey', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByItemKeyIV() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByItemKeyIV() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'itemKeyIV', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByItemKeyIVDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByItemKeyIVDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'itemKeyIV', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByUpdatedAt() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      sortByUpdatedAtDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByUuid() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> sortByUuidDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> sortByUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.desc);
     });
   }
 }
 
-extension PasswordEntryQuerySortThenBy
-    on QueryBuilder<PasswordEntry, PasswordEntry, QSortThenBy> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByCreatedAt() {
+extension PageEntryQuerySortThenBy
+    on QueryBuilder<PageEntry, PageEntry, QSortThenBy> {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByCreatedAtDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByDataIV() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByDataIV() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dataIV', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByDataIVDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByDataIVDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'dataIV', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByEncryptedData() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByEncryptedData() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedData', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByEncryptedDataDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByEncryptedDataDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedData', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByEncryptedItemKey() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByEncryptedItemKey() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedItemKey', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy>
       thenByEncryptedItemKeyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'encryptedItemKey', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenById() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByItemKeyIV() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByItemKeyIV() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'itemKeyIV', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByItemKeyIVDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByItemKeyIVDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'itemKeyIV', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByUpdatedAt() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy>
-      thenByUpdatedAtDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByUpdatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'updatedAt', Sort.desc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByUuid() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByUuid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.asc);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QAfterSortBy> thenByUuidDesc() {
+  QueryBuilder<PageEntry, PageEntry, QAfterSortBy> thenByUuidDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uuid', Sort.desc);
     });
   }
 }
 
-extension PasswordEntryQueryWhereDistinct
-    on QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> {
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByCreatedAt() {
+extension PageEntryQueryWhereDistinct
+    on QueryBuilder<PageEntry, PageEntry, QDistinct> {
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByDataIV(
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByDataIV(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'dataIV', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByEncryptedData(
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByEncryptedData(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'encryptedData',
@@ -1311,28 +1273,28 @@ extension PasswordEntryQueryWhereDistinct
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct>
-      distinctByEncryptedItemKey({bool caseSensitive = true}) {
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByEncryptedItemKey(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'encryptedItemKey',
           caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByItemKeyIV(
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByItemKeyIV(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'itemKeyIV', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByUpdatedAt() {
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByUpdatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'updatedAt');
     });
   }
 
-  QueryBuilder<PasswordEntry, PasswordEntry, QDistinct> distinctByUuid(
+  QueryBuilder<PageEntry, PageEntry, QDistinct> distinctByUuid(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
@@ -1340,53 +1302,51 @@ extension PasswordEntryQueryWhereDistinct
   }
 }
 
-extension PasswordEntryQueryProperty
-    on QueryBuilder<PasswordEntry, PasswordEntry, QQueryProperty> {
-  QueryBuilder<PasswordEntry, int, QQueryOperations> idProperty() {
+extension PageEntryQueryProperty
+    on QueryBuilder<PageEntry, PageEntry, QQueryProperty> {
+  QueryBuilder<PageEntry, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<PasswordEntry, DateTime, QQueryOperations> createdAtProperty() {
+  QueryBuilder<PageEntry, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
   }
 
-  QueryBuilder<PasswordEntry, String, QQueryOperations> dataIVProperty() {
+  QueryBuilder<PageEntry, String, QQueryOperations> dataIVProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'dataIV');
     });
   }
 
-  QueryBuilder<PasswordEntry, String, QQueryOperations>
-      encryptedDataProperty() {
+  QueryBuilder<PageEntry, String, QQueryOperations> encryptedDataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'encryptedData');
     });
   }
 
-  QueryBuilder<PasswordEntry, String, QQueryOperations>
-      encryptedItemKeyProperty() {
+  QueryBuilder<PageEntry, String, QQueryOperations> encryptedItemKeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'encryptedItemKey');
     });
   }
 
-  QueryBuilder<PasswordEntry, String, QQueryOperations> itemKeyIVProperty() {
+  QueryBuilder<PageEntry, String, QQueryOperations> itemKeyIVProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'itemKeyIV');
     });
   }
 
-  QueryBuilder<PasswordEntry, DateTime, QQueryOperations> updatedAtProperty() {
+  QueryBuilder<PageEntry, DateTime, QQueryOperations> updatedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'updatedAt');
     });
   }
 
-  QueryBuilder<PasswordEntry, String, QQueryOperations> uuidProperty() {
+  QueryBuilder<PageEntry, String, QQueryOperations> uuidProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'uuid');
     });

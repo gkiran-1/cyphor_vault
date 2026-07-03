@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/vault_providers.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/validators.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class AddEditNoteScreen extends ConsumerStatefulWidget {
   final int? existingId;
@@ -46,8 +45,9 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
         },
         existingId: widget.existingId,
       );
-      ref.refresh(notesProvider);
-      if (mounted) context.go(AppRoutes.notes);
+      ref.invalidate(notesProvider);
+      ref.invalidate(vaultCountsProvider);
+      if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -61,18 +61,12 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
   Widget build(BuildContext context) {
     final isEdit = widget.existingId != null;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Note' : 'Add Note'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              context.pop();
-            } else {
-              context.go(AppRoutes.notes);
-            }
-          },
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -83,9 +77,9 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Category',
+                Text('Category',
                     style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
+                        color: context.palette.textSecondary, fontSize: 13)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -109,7 +103,7 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _titleCtrl,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: const InputDecoration(labelText: 'Title'),
                   validator: (v) => Validators.required(v, fieldName: 'Title'),
                 ),
@@ -117,7 +111,7 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
                 TextFormField(
                   controller: _contentCtrl,
                   maxLines: 8,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: InputDecoration(
                     labelText: _category == AppConstants.noteImportantLink
                         ? 'URL / Content'
@@ -167,22 +161,22 @@ class _CategoryChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected
-              ? AppColors.primary.withValues(alpha: 0.15)
-              : AppColors.surface,
+              ? context.palette.primary.withValues(alpha: 0.15)
+              : context.palette.surface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-              color: selected ? AppColors.primary : AppColors.border),
+              color: selected ? context.palette.primary : context.palette.border),
         ),
         child: Row(
           children: [
             Icon(icon,
                 size: 16,
-                color: selected ? AppColors.primary : AppColors.textSecondary),
+                color: selected ? context.palette.primary : context.palette.textSecondary),
             const SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
                     color:
-                        selected ? AppColors.primary : AppColors.textSecondary,
+                        selected ? context.palette.primary : context.palette.textSecondary,
                     fontSize: 13)),
           ],
         ),

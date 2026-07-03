@@ -15,7 +15,7 @@ extension GetNoteEntryCollection on Isar {
 
 const NoteEntrySchema = CollectionSchema(
   name: r'NoteEntry',
-  id: 6591543896557105152,
+  id: 6591543896557104723,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,

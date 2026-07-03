@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_providers.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class RecoveryEntryScreen extends ConsumerStatefulWidget {
   const RecoveryEntryScreen({super.key});
@@ -54,7 +54,7 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Recover Vault'),
         leading: IconButton(
@@ -70,15 +70,15 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Enter your recovery phrase and choose a new PIN.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                  style: TextStyle(color: context.palette.textSecondary, fontSize: 14, height: 1.5),
                 ),
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   'Recovery Phrase',
                   style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5),
@@ -86,17 +86,17 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _phraseCtrl,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: context.palette.textPrimary,
                     fontFamily: 'monospace',
                     letterSpacing: 1.5,
                     fontSize: 15,
                   ),
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX',
                     hintStyle: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: context.palette.textSecondary,
                         fontFamily: 'monospace',
                         letterSpacing: 1.5,
                         fontSize: 13),
@@ -109,10 +109,10 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'New PIN',
                   style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5),
@@ -123,10 +123,10 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
                   obscureText: true,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  style: const TextStyle(color: AppColors.textPrimary, letterSpacing: 8),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: context.palette.textPrimary, letterSpacing: 8),
+                  decoration: InputDecoration(
                     hintText: '6-digit PIN',
-                    hintStyle: TextStyle(color: AppColors.textSecondary, letterSpacing: 1),
+                    hintStyle: TextStyle(color: context.palette.textSecondary, letterSpacing: 1),
                     counterText: '',
                   ),
                   validator: (v) {
@@ -142,10 +142,10 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
                   obscureText: true,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  style: const TextStyle(color: AppColors.textPrimary, letterSpacing: 8),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: context.palette.textPrimary, letterSpacing: 8),
+                  decoration: InputDecoration(
                     hintText: 'Confirm new PIN',
-                    hintStyle: TextStyle(color: AppColors.textSecondary, letterSpacing: 1),
+                    hintStyle: TextStyle(color: context.palette.textSecondary, letterSpacing: 1),
                     counterText: '',
                   ),
                   validator: (v) {
@@ -159,17 +159,17 @@ class _RecoveryEntryScreenState extends ConsumerState<RecoveryEntryScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.1),
+                      color: context.palette.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                      border: Border.all(color: context.palette.error.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline, color: AppColors.error, size: 18),
+                        Icon(Icons.error_outline, color: context.palette.error, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(_error!,
-                              style: const TextStyle(color: AppColors.error, fontSize: 13)),
+                              style: TextStyle(color: context.palette.error, fontSize: 13)),
                         ),
                       ],
                     ),

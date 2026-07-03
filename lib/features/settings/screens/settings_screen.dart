@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/auth/auth_service.dart';
 import '../../../core/providers/auth_providers.dart';
+import '../../../core/providers/theme_provider.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -14,59 +16,101 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Settings'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.home),
+          onPressed: () => context.pop(),
         ),
       ),
       body: ListView(
+        padding: const EdgeInsets.only(top: 8, bottom: 40),
         children: [
-          _SectionHeader('ACCOUNT'),
-          _SettingsTile(
-            icon: Icons.lock_reset_outlined,
-            title: 'Change PIN',
-            subtitle: 'Update your vault unlock PIN',
-            onTap: () => context.go(AppRoutes.changePin),
+          const _AppearanceSection(),
+          _SectionCard(
+            delay: 80,
+            header: _SectionHeader(
+              label: 'ACCOUNT',
+              icon: Icons.person_outline,
+              color: context.palette.primary,
+            ),
+            tiles: [
+              _SettingsTile(
+                icon: Icons.lock_reset_outlined,
+                iconColor: context.palette.primary,
+                title: 'Change PIN',
+                subtitle: 'Update your vault unlock PIN',
+                onTap: () => context.push(AppRoutes.changePin),
+              ),
+            ],
           ),
-
-          _SectionHeader('SECURITY'),
-          _SettingsTile(
-            icon: Icons.fingerprint,
-            title: 'Biometric & PIN',
-            onTap: () => context.go(AppRoutes.securitySettings),
+          _SectionCard(
+            delay: 80,
+            header: _SectionHeader(
+              label: 'SECURITY',
+              icon: Icons.shield_outlined,
+              color: const Color(0xFFFF9800),
+            ),
+            tiles: [
+              _SettingsTile(
+                icon: Icons.fingerprint,
+                iconColor: const Color(0xFFFF9800),
+                title: 'Biometric & PIN',
+                subtitle: 'Manage biometric authentication',
+                onTap: () => context.push(AppRoutes.securitySettings),
+              ),
+            ],
           ),
-
-          _SectionHeader('BACKUP'),
-          _SettingsTile(
-            icon: Icons.cloud_outlined,
-            title: 'Google Drive Backup',
-            onTap: () => context.go(AppRoutes.backupSettings),
+          _SectionCard(
+            delay: 160,
+            header: _SectionHeader(
+              label: 'BACKUP',
+              icon: Icons.cloud_outlined,
+              color: context.palette.success,
+            ),
+            tiles: [
+              _SettingsTile(
+                icon: Icons.cloud_sync_outlined,
+                iconColor: context.palette.success,
+                title: 'Google Drive Backup',
+                subtitle: 'Encrypted backup to your Drive',
+                onTap: () => context.push(AppRoutes.backupSettings),
+              ),
+            ],
           ),
-
-          _SectionHeader('DANGER ZONE'),
-          _SettingsTile(
-            icon: Icons.delete_forever_outlined,
-            title: 'Delete All Data',
-            titleColor: AppColors.error,
-            onTap: () async {
-              final confirm = await showConfirmDialog(
-                context,
+          _SectionCard(
+            delay: 240,
+            isDanger: true,
+            header: _SectionHeader(
+              label: 'DANGER ZONE',
+              icon: Icons.warning_amber_outlined,
+              color: context.palette.error,
+            ),
+            tiles: [
+              _SettingsTile(
+                icon: Icons.delete_forever_outlined,
+                iconColor: context.palette.error,
                 title: 'Delete All Data',
-                message:
-                    'This will permanently delete all your vault data and cannot be undone. Are you absolutely sure?',
-                confirmText: 'Delete Everything',
-                destructive: true,
-              );
-              if (confirm && context.mounted) {
-                await AuthService.instance.deleteAccount();
-                ref.read(authStateProvider.notifier).initialize();
-              }
-            },
+                titleColor: context.palette.error,
+                subtitle: 'Permanently erase all vault data',
+                onTap: () async {
+                  final confirm = await showConfirmDialog(
+                    context,
+                    title: 'Delete All Data',
+                    message:
+                        'This will permanently delete all your vault data and cannot be undone. Are you absolutely sure?',
+                    confirmText: 'Delete Everything',
+                    destructive: true,
+                  );
+                  if (confirm && context.mounted) {
+                    await AuthService.instance.deleteAccount();
+                    ref.read(authStateProvider.notifier).initialize();
+                  }
+                },
+              ),
+            ],
           ),
-
           const SizedBox(height: 24),
           FutureBuilder<PackageInfo>(
             future: PackageInfo.fromPlatform(),
@@ -74,36 +118,174 @@ class SettingsScreen extends ConsumerWidget {
               final version = snap.data?.version ?? '';
               return Center(
                 child: Text(
-                  'CipherBox $version',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  version.isNotEmpty ? 'CipherBox $version' : 'CipherBox',
+                  style: TextStyle(
+                      color: context.palette.textSecondary, fontSize: 12),
                 ),
               );
             },
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  const _SectionHeader(this.title);
+class _AppearanceSection extends ConsumerWidget {
+  const _AppearanceSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeModeProvider);
+    final p = context.palette;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Row(
+              children: [
+                Icon(Icons.palette_outlined, color: p.primary, size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  'APPEARANCE',
+                  style: TextStyle(
+                    color: p.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: p.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: p.border, width: 1),
+            ),
+            child: SegmentedButton<ThemeMode>(
+              segments: const [
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  label: Text('System'),
+                  icon: Icon(Icons.brightness_auto_outlined),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  label: Text('Light'),
+                  icon: Icon(Icons.light_mode_outlined),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  label: Text('Dark'),
+                  icon: Icon(Icons.dark_mode_outlined),
+                ),
+              ],
+              selected: {mode},
+              showSelectedIcon: false,
+              onSelectionChanged: (sel) =>
+                  ref.read(themeModeProvider.notifier).setMode(sel.first),
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate()
+        .fadeIn(duration: 250.ms)
+        .slideY(begin: 0.05, duration: 250.ms, curve: Curves.easeOut);
+  }
+}
+
+class _SectionHeader {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _SectionHeader({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
+class _SectionCard extends StatelessWidget {
+  final _SectionHeader header;
+  final List<_SettingsTile> tiles;
+  final int delay;
+  final bool isDanger;
+
+  const _SectionCard({
+    required this.header,
+    required this.tiles,
+    this.delay = 0,
+    this.isDanger = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-      child: Text(title,
-          style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-    );
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Row(
+              children: [
+                Icon(header.icon, color: header.color, size: 14),
+                const SizedBox(width: 6),
+                Text(
+                  header.label,
+                  style: TextStyle(
+                    color: header.color,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: context.palette.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDanger
+                    ? context.palette.error.withValues(alpha: 0.3)
+                    : context.palette.border,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < tiles.length; i++) ...[
+                  tiles[i],
+                  if (i < tiles.length - 1)
+                    const Divider(height: 1, indent: 56, endIndent: 16),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate(delay: delay.ms)
+        .fadeIn(duration: 250.ms)
+        .slideY(begin: 0.05, duration: 250.ms, curve: Curves.easeOut);
   }
 }
 
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
@@ -111,6 +293,7 @@ class _SettingsTile extends StatelessWidget {
 
   const _SettingsTile({
     required this.icon,
+    required this.iconColor,
     required this.title,
     this.subtitle,
     this.onTap,
@@ -120,16 +303,34 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: titleColor ?? AppColors.textSecondary, size: 22),
-      title: Text(title,
-          style: TextStyle(
-              color: titleColor ?? AppColors.textPrimary, fontWeight: FontWeight.w500)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: iconColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: Icon(icon, color: iconColor, size: 18),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: titleColor ?? context.palette.textPrimary,
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+        ),
+      ),
       subtitle: subtitle != null
-          ? Text(subtitle!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13))
+          ? Text(subtitle!,
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 12))
           : null,
       trailing: onTap != null
-          ? const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 18)
+          ? Icon(Icons.chevron_right,
+              color: context.palette.textSecondary, size: 18)
           : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onTap: onTap,
     );
   }

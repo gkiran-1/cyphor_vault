@@ -1,12 +1,27 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/constants.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 import '../../../shared/widgets/blurred_text.dart';
 import '../../../shared/widgets/privacy_indicator_banner.dart';
+import '../widgets/encrypted_image_view.dart';
+
+/// Builds the image section list (front/back), preferring the new on-disk
+/// encrypted ref and falling back to legacy inline base64.
+List<Widget> _imageBlock(Map<String, dynamic> data, String label, String key) {
+  final ref = data['${key}Ref'];
+  final b64 = data['${key}Base64'];
+  if (ref == null && b64 == null) return const [];
+  return [
+    const SizedBox(height: 16),
+    _ImageSection(
+      label,
+      imageRef: ref is Map ? Map<String, dynamic>.from(ref) : null,
+      imageB64: b64 as String?,
+    ),
+  ];
+}
 
 class DocumentDetailScreen extends StatefulWidget {
   final int id;
@@ -51,17 +66,17 @@ class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.documents),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => context.go(AppRoutes.addDocument, extra: {
+            onPressed: () => context.push(AppRoutes.addDocument, extra: {
               'id': widget.id,
               'type': widget.documentType,
               'data': widget.data
@@ -111,14 +126,8 @@ class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
               sensitive: false),
           _Tile('Address', widget.data['address'] ?? '', sensitive: false),
         ]),
-        if (widget.data['imageFrontBase64'] != null) ...[
-          const SizedBox(height: 16),
-          _ImageSection('Front', widget.data['imageFrontBase64'] as String),
-        ],
-        if (widget.data['imageBackBase64'] != null) ...[
-          const SizedBox(height: 16),
-          _ImageSection('Back', widget.data['imageBackBase64'] as String),
-        ],
+        ..._imageBlock(widget.data, 'Front', 'imageFront'),
+        ..._imageBlock(widget.data, 'Back', 'imageBack'),
         if ((widget.data['notes'] as String? ?? '').isNotEmpty) ...[
           const SizedBox(height: 16),
           _Section(children: [
@@ -137,10 +146,7 @@ class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
           _Tile("Father's Name", widget.data['fatherName'] ?? '',
               sensitive: false),
         ]),
-        if (widget.data['imageFrontBase64'] != null) ...[
-          const SizedBox(height: 16),
-          _ImageSection('Front', widget.data['imageFrontBase64'] as String),
-        ],
+        ..._imageBlock(widget.data, 'Front', 'imageFront'),
       ];
 
   List<Widget> _cardFields() {
@@ -166,14 +172,8 @@ class _DocumentDetailScreenState extends State<DocumentDetailScreen> {
             (widget.data['cardNetwork'] as String? ?? '').toUpperCase(),
             sensitive: false),
       ]),
-      if (widget.data['imageFrontBase64'] != null) ...[
-        const SizedBox(height: 16),
-        _ImageSection('Front', widget.data['imageFrontBase64'] as String),
-      ],
-      if (widget.data['imageBackBase64'] != null) ...[
-        const SizedBox(height: 16),
-        _ImageSection('Back', widget.data['imageBackBase64'] as String),
-      ],
+      ..._imageBlock(widget.data, 'Front', 'imageFront'),
+      ..._imageBlock(widget.data, 'Back', 'imageBack'),
     ];
   }
 }
@@ -186,14 +186,14 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(
         children: children
             .expand(
-                (w) => [w, const Divider(color: AppColors.border, height: 1)])
+                (w) => [w, Divider(color: context.palette.border, height: 1)])
             .toList()
           ..removeLast(),
       ),
@@ -215,12 +215,12 @@ class _Tile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12)),
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 12)),
           const SizedBox(height: 4),
           Text(value,
               style:
-                  const TextStyle(color: AppColors.textPrimary, fontSize: 15)),
+                  TextStyle(color: context.palette.textPrimary, fontSize: 15)),
         ],
       ),
     );
@@ -243,8 +243,8 @@ class _SensitiveTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12)),
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 12)),
           const SizedBox(height: 6),
           BlurredText(
             text: value,
@@ -258,8 +258,9 @@ class _SensitiveTile extends StatelessWidget {
 
 class _ImageSection extends StatelessWidget {
   final String label;
-  final String imageB64;
-  const _ImageSection(this.label, this.imageB64);
+  final Map<String, dynamic>? imageRef;
+  final String? imageB64;
+  const _ImageSection(this.label, {this.imageRef, this.imageB64});
 
   @override
   Widget build(BuildContext context) {
@@ -268,13 +269,9 @@ class _ImageSection extends StatelessWidget {
       children: [
         Text('$label Image',
             style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                TextStyle(color: context.palette.textSecondary, fontSize: 13)),
         const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: Image.memory(base64.decode(imageB64),
-              width: double.infinity, fit: BoxFit.contain),
-        ),
+        EncryptedImageView(imageRef: imageRef, legacyBase64: imageB64),
       ],
     );
   }
@@ -300,7 +297,7 @@ class _CardPreview extends StatelessWidget {
         bg = const Color(0xFF097969);
         break;
       default:
-        bg = AppColors.surfaceLight;
+        bg = context.palette.surfaceLight;
     }
     return Container(
       width: double.infinity,
@@ -313,7 +310,7 @@ class _CardPreview extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

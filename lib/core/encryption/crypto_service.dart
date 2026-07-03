@@ -92,6 +92,44 @@ class CryptoService {
     }
   }
 
+  /// Encrypt raw bytes with AES-256-GCM. Returns ciphertext+tag bytes.
+  Uint8List encryptBytes(Uint8List data, Uint8List key, Uint8List iv) {
+    final cipher = GCMBlockCipher(AESEngine());
+    final params = AEADParameters(
+      KeyParameter(key),
+      SecurityConstants.gcmTagLength * 8,
+      iv,
+      Uint8List(0),
+    );
+    cipher.init(true, params);
+    final output = Uint8List(cipher.getOutputSize(data.length));
+    var len = cipher.processBytes(data, 0, data.length, output, 0);
+    len += cipher.doFinal(output, len);
+    return output.sublist(0, len);
+  }
+
+  /// Decrypt raw AES-256-GCM bytes. Throws [AuthenticationException] if tampered.
+  Uint8List decryptBytes(Uint8List ciphertext, Uint8List key, Uint8List iv) {
+    try {
+      final cipher = GCMBlockCipher(AESEngine());
+      final params = AEADParameters(
+        KeyParameter(key),
+        SecurityConstants.gcmTagLength * 8,
+        iv,
+        Uint8List(0),
+      );
+      cipher.init(false, params);
+      final output = Uint8List(cipher.getOutputSize(ciphertext.length));
+      var len = cipher.processBytes(ciphertext, 0, ciphertext.length, output, 0);
+      len += cipher.doFinal(output, len);
+      return output.sublist(0, len);
+    } on InvalidCipherTextException catch (e) {
+      throw AuthenticationException('Image decryption failed: ${e.message}');
+    } catch (e) {
+      throw AuthenticationException('Image decryption failed: $e');
+    }
+  }
+
   /// Wrap (encrypt) an item key with the KEK.
   EncryptedPayload wrapKey(Uint8List itemKey, Uint8List kek, Uint8List iv) {
     return encrypt(base64.encode(itemKey), kek, iv);

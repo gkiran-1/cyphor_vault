@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../core/auth/auth_service.dart';
 import '../../../core/encryption/key_manager.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class ChangePinScreen extends ConsumerStatefulWidget {
   const ChangePinScreen({super.key});
@@ -77,7 +76,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('PIN changed successfully')));
-        context.go(AppRoutes.settings);
+        context.pop();
       }
     } catch (e) {
       setState(() {
@@ -94,7 +93,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: const Text('Change PIN')),
       body: SafeArea(
         child: Padding(
@@ -102,9 +101,9 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Your PIN protects access to your vault.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.5),
+                style: TextStyle(color: context.palette.textSecondary, fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 32),
               AnimatedSwitcher(
@@ -116,17 +115,17 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
+                    color: context.palette.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                    border: Border.all(color: context.palette.error.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: AppColors.error, size: 18),
+                      Icon(Icons.error_outline, color: context.palette.error, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(_error!,
-                            style: const TextStyle(color: AppColors.error, fontSize: 13)),
+                            style: TextStyle(color: context.palette.error, fontSize: 13)),
                       ),
                     ],
                   ),
@@ -134,7 +133,7 @@ class _ChangePinScreenState extends ConsumerState<ChangePinScreen> {
               ],
               if (_loading) ...[
                 const SizedBox(height: 24),
-                const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                Center(child: CircularProgressIndicator(color: context.palette.primary)),
               ],
             ],
           ),
@@ -195,14 +194,14 @@ class _StepWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: const TextStyle(
-                color: AppColors.textPrimary,
+            style: TextStyle(
+                color: context.palette.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Text(subtitle,
-            style: const TextStyle(
-                color: AppColors.textSecondary, fontSize: 13)),
+            style: TextStyle(
+                color: context.palette.textSecondary, fontSize: 13)),
         const SizedBox(height: 28),
         PinCodeTextField(
           appContext: context,
@@ -215,12 +214,12 @@ class _StepWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             fieldHeight: 52,
             fieldWidth: 44,
-            activeFillColor: AppColors.surfaceLight,
-            inactiveFillColor: AppColors.background,
-            selectedFillColor: AppColors.surfaceLight,
-            activeColor: AppColors.primary,
-            inactiveColor: AppColors.border,
-            selectedColor: AppColors.primary,
+            activeFillColor: context.palette.surfaceLight,
+            inactiveFillColor: context.palette.background,
+            selectedFillColor: context.palette.surfaceLight,
+            activeColor: context.palette.primary,
+            inactiveColor: context.palette.border,
+            selectedColor: context.palette.primary,
           ),
           enableActiveFill: true,
           onChanged: (_) {},

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/auth_providers.dart';
 import '../../../core/utils/validators.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 import '../widgets/password_strength_indicator.dart';
 
 class CreateAccountScreen extends ConsumerStatefulWidget {
@@ -60,7 +60,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -70,16 +70,16 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Set up your CipherBox account.',
+                Text('Set up your CipherBox account.',
                     style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 14)),
+                        color: context.palette.textSecondary, fontSize: 14)),
                 const SizedBox(height: 28),
 
                 // Email
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: const InputDecoration(labelText: 'Email'),
                   validator: Validators.email,
                 ),
@@ -89,7 +89,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                 TextFormField(
                   controller: _passwordCtrl,
                   obscureText: _obscurePass,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Master Password',
                     helperText: 'Min 8 characters',
@@ -101,13 +101,13 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                               _obscurePass
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: AppColors.textSecondary),
+                              color: context.palette.textSecondary),
                           onPressed: () =>
                               setState(() => _obscurePass = !_obscurePass),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.copy_outlined,
-                              size: 20, color: AppColors.textSecondary),
+                          icon: Icon(Icons.copy_outlined,
+                              size: 20, color: context.palette.textSecondary),
                           tooltip: 'Copy',
                           onPressed: () async {
                             final text = _passwordCtrl.text;
@@ -135,7 +135,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                 TextFormField(
                   controller: _confirmCtrl,
                   obscureText: _obscureConfirm,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
                     suffixIcon: Row(
@@ -146,13 +146,13 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                               _obscureConfirm
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: AppColors.textSecondary),
+                              color: context.palette.textSecondary),
                           onPressed: () => setState(
                               () => _obscureConfirm = !_obscureConfirm),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.copy_outlined,
-                              size: 20, color: AppColors.textSecondary),
+                          icon: Icon(Icons.copy_outlined,
+                              size: 20, color: context.palette.textSecondary),
                           tooltip: 'Copy',
                           onPressed: () async {
                             final text = _confirmCtrl.text;
@@ -173,11 +173,11 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                const Divider(color: AppColors.border),
+                Divider(color: context.palette.border),
                 const SizedBox(height: 16),
-                const Text('Set a PIN (4–6 digits)',
+                Text('Set a PIN (4–6 digits)',
                     style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 13)),
+                        color: context.palette.textSecondary, fontSize: 13)),
                 const SizedBox(height: 12),
 
                 // PIN
@@ -186,7 +186,7 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                   obscureText: _obscurePin,
                   keyboardType: TextInputType.number,
                   maxLength: 6,
-                  style: const TextStyle(color: AppColors.textPrimary),
+                  style: TextStyle(color: context.palette.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'PIN',
                     counterText: '',
@@ -198,13 +198,13 @@ class _CreateAccountScreenState extends ConsumerState<CreateAccountScreen> {
                               _obscurePin
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: AppColors.textSecondary),
+                              color: context.palette.textSecondary),
                           onPressed: () =>
                               setState(() => _obscurePin = !_obscurePin),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.copy_outlined,
-                              size: 20, color: AppColors.textSecondary),
+                          icon: Icon(Icons.copy_outlined,
+                              size: 20, color: context.palette.textSecondary),
                           tooltip: 'Copy',
                           onPressed: () async {
                             final text = _pinCtrl.text;

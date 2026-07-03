@@ -10,17 +10,17 @@ import '../../../shared/theme/app_palette.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/empty_state.dart';
 
-class NotesListScreen extends ConsumerWidget {
-  const NotesListScreen({super.key});
+class PagesListScreen extends ConsumerWidget {
+  const PagesListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notes = ref.watch(notesProvider);
+    final pages = ref.watch(pagesProvider);
 
     return Scaffold(
       backgroundColor: context.palette.background,
       appBar: AppBar(
-        title: const Text('Notes'),
+        title: const Text('Pages'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -28,20 +28,20 @@ class NotesListScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.push(AppRoutes.addNote),
+            onPressed: () => context.push(AppRoutes.addPage),
           ),
         ],
       ),
-      body: notes.when(
+      body: pages.when(
         data: (items) {
           if (items.isEmpty) {
             return EmptyState(
-              icon: Icons.sticky_note_2_outlined,
-              title: 'No notes yet',
-              subtitle: 'Tap + to add your first note or link',
+              icon: Icons.article_outlined,
+              title: 'No pages yet',
+              subtitle: 'Tap + to create your first rich page',
               action: ElevatedButton(
-                onPressed: () => context.push(AppRoutes.addNote),
-                child: const Text('Add Note'),
+                onPressed: () => context.push(AppRoutes.addPage),
+                child: const Text('New Page'),
               ),
             );
           }
@@ -51,10 +51,10 @@ class NotesListScreen extends ConsumerWidget {
             itemBuilder: (ctx, i) {
               final item = items[i];
               final data = item['data'] as Map<String, dynamic>;
-              return _NoteTile(
+              return _PageTile(
                 id: item['id'] as int,
                 data: data,
-                onDeleted: () => ref.refresh(notesProvider),
+                onDeleted: () => ref.refresh(pagesProvider),
               )
                   .animate(delay: (i * 50).ms)
                   .fadeIn(duration: 250.ms)
@@ -62,26 +62,26 @@ class NotesListScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => Center(child: CircularProgressIndicator(color: context.palette.primary)),
-        error: (e, _) => Center(child: Text('$e', style: TextStyle(color: context.palette.error))),
+        loading: () => Center(
+            child: CircularProgressIndicator(color: context.palette.primary)),
+        error: (e, _) =>
+            Center(child: Text('$e', style: TextStyle(color: context.palette.error))),
       ),
     );
   }
 }
 
-class _NoteTile extends StatelessWidget {
+class _PageTile extends StatelessWidget {
   final int id;
   final Map<String, dynamic> data;
   final VoidCallback onDeleted;
 
-  const _NoteTile({required this.id, required this.data, required this.onDeleted});
+  const _PageTile({required this.id, required this.data, required this.onDeleted});
 
   @override
   Widget build(BuildContext context) {
     final title = data['title'] as String? ?? 'Untitled';
-    final content = data['content'] as String? ?? '';
-    final category = data['category'] as String? ?? 'note';
-    final isLink = category == 'important_link';
+    final emoji = data['coverEmoji'] as String?;
 
     return Slidable(
       endActionPane: ActionPane(
@@ -90,12 +90,12 @@ class _NoteTile extends StatelessWidget {
           SlidableAction(
             onPressed: (_) async {
               final confirm = await showConfirmDialog(context,
-                  title: 'Delete Note',
+                  title: 'Delete Page',
                   message: 'Delete "$title"? This cannot be undone.',
                   confirmText: 'Delete',
                   destructive: true);
               if (confirm) {
-                await IsarService.instance.deleteNote(id);
+                await IsarService.instance.deletePage(id);
                 onDeleted();
               }
             },
@@ -108,17 +108,17 @@ class _NoteTile extends StatelessWidget {
       ),
       child: Card(
         child: InkWell(
-          onTap: () => context.push(AppRoutes.noteDetail, extra: {'id': id, 'data': data}),
+          onTap: () => context.push(AppRoutes.pageDetail, extra: {'id': id, 'data': data}),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(
-                  isLink ? Icons.link_rounded : Icons.sticky_note_2_outlined,
-                  color: isLink ? context.palette.primary : const Color(0xFFFF9800),
-                  size: 22,
-                ),
+                if (emoji != null)
+                  Text(emoji, style: const TextStyle(fontSize: 22))
+                else
+                  const Icon(Icons.article_outlined,
+                      color: Color(0xFF9C27B0), size: 22),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -126,16 +126,16 @@ class _NoteTile extends StatelessWidget {
                     children: [
                       Text(title,
                           style: TextStyle(
-                              color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
-                      if (content.isNotEmpty)
-                        Text(
-                          content.length > 60 ? '${content.substring(0, 60)}…' : content,
-                          style: TextStyle(color: context.palette.textSecondary, fontSize: 13),
-                        ),
+                              color: context.palette.textPrimary,
+                              fontWeight: FontWeight.w600)),
+                      Text('Rich page',
+                          style: TextStyle(
+                              color: context.palette.textSecondary, fontSize: 13)),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: context.palette.textSecondary, size: 18),
+                Icon(Icons.chevron_right,
+                    color: context.palette.textSecondary, size: 18),
               ],
             ),
           ),

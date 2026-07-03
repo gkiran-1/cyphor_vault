@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/auth/biometric_service.dart';
-import '../../../core/utils/constants.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 import '../../../shared/widgets/blurred_text.dart';
-import 'dart:async';
 
 class PasswordDetailScreen extends StatelessWidget {
   final int id;
@@ -23,18 +20,18 @@ class PasswordDetailScreen extends StatelessWidget {
     final notes = data['notes'] as String? ?? '';
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(siteName),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.passwords),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context
-                .go(AppRoutes.addPassword, extra: {'id': id, 'data': data}),
+                .push(AppRoutes.addPassword, extra: {'id': id, 'data': data}),
           ),
         ],
       ),
@@ -77,14 +74,14 @@ class _DetailSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Column(
         children: children
             .expand(
-                (w) => [w, const Divider(color: AppColors.border, height: 1)])
+                (w) => [w, Divider(color: context.palette.border, height: 1)])
             .toList()
           ..removeLast(),
       ),
@@ -112,19 +109,19 @@ class _DetailTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 12)),
+                    style: TextStyle(
+                        color: context.palette.textSecondary, fontSize: 12)),
                 const SizedBox(height: 4),
                 Text(value,
-                    style: const TextStyle(
-                        color: AppColors.textPrimary, fontSize: 15)),
+                    style: TextStyle(
+                        color: context.palette.textPrimary, fontSize: 15)),
               ],
             ),
           ),
           if (copyable && value.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.copy_outlined,
-                  size: 18, color: AppColors.textSecondary),
+              icon: Icon(Icons.copy_outlined,
+                  size: 18, color: context.palette.textSecondary),
               onPressed: () {
                 Clipboard.setData(ClipboardData(text: value));
                 ScaffoldMessenger.of(context)
@@ -151,8 +148,8 @@ class _SensitiveTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 12)),
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 12)),
           const SizedBox(height: 6),
           BlurredText(text: value, requireBiometric: true),
         ],

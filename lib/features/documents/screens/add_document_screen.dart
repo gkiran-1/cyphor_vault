@@ -1,15 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/encryption/key_manager.dart';
 import '../../../core/providers/vault_providers.dart';
+import '../../../core/storage/encrypted_image_store.dart';
 import '../../../core/utils/constants.dart';
-import '../../../core/utils/validators.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
+import '../widgets/encrypted_image_view.dart';
+
+/// Tracks the state of a single document image slot (front/back) while editing.
+class _ImageSlot {
+  Map<String, dynamic>? ref; // existing on-disk encrypted ref (unchanged)
+  Uint8List? newBytes; // freshly picked bytes to persist on save
+  Map<String, dynamic>? pendingDelete; // old ref to remove on save
+
+  bool get hasImage => newBytes != null || ref != null;
+}
 
 class AddDocumentScreen extends ConsumerStatefulWidget {
   final int? existingId;
@@ -51,8 +62,8 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
   String _cardType = 'debit';
 
   // Images
-  String? _frontImageB64;
-  String? _backImageB64;
+  final _front = _ImageSlot();
+  final _back = _ImageSlot();
 
   final _picker = ImagePicker();
 
@@ -82,8 +93,19 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
     _bankCtrl.text = d['bankName'] ?? '';
     _cardNetwork = d['cardNetwork'] ?? AppConstants.cardVisa;
     _cardType = d['cardType'] ?? 'debit';
-    _frontImageB64 = d['imageFrontBase64'];
-    _backImageB64 = d['imageBackBase64'];
+    _loadSlot(_front, d, 'imageFront');
+    _loadSlot(_back, d, 'imageBack');
+  }
+
+  // Loads an existing image slot, preferring the on-disk ref. Legacy inline
+  // base64 is decoded into bytes so it gets migrated to the store on save.
+  void _loadSlot(_ImageSlot slot, Map<String, dynamic> d, String key) {
+    final ref = d['${key}Ref'];
+    if (ref is Map) {
+      slot.ref = Map<String, dynamic>.from(ref);
+    } else if (d['${key}Base64'] != null) {
+      slot.newBytes = base64.decode(d['${key}Base64'] as String);
+    }
   }
 
   @override
@@ -106,7 +128,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage(bool isFront) async {
+  Future<void> _pickImage(_ImageSlot slot) async {
     final picked = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: SecurityConstants.imageCompressionQuality,
@@ -114,20 +136,33 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
     if (picked == null) return;
     final bytes = await File(picked.path).readAsBytes();
     if (bytes.length > SecurityConstants.maxImageSizeBytes) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Image is too large (max 5MB)')));
+      }
       return;
     }
     setState(() {
-      if (isFront)
-        _frontImageB64 = base64.encode(bytes);
-      else
-        _backImageB64 = base64.encode(bytes);
+      if (slot.ref != null) {
+        slot.pendingDelete = slot.ref;
+        slot.ref = null;
+      }
+      slot.newBytes = bytes;
     });
   }
 
-  Map<String, dynamic> _buildData() {
+  void _clearImage(_ImageSlot slot) {
+    setState(() {
+      if (slot.ref != null) {
+        slot.pendingDelete = slot.ref;
+        slot.ref = null;
+      }
+      slot.newBytes = null;
+    });
+  }
+
+  Map<String, dynamic> _buildData(
+      Map<String, dynamic>? frontRef, Map<String, dynamic>? backRef) {
     switch (_selectedType) {
       case AppConstants.docAadhaar:
         return {
@@ -135,8 +170,8 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
           'aadhaarNumber': _aadhaarCtrl.text.trim(),
           'dateOfBirth': _dobCtrl.text.trim(),
           'address': _addressCtrl.text.trim(),
-          'imageFrontBase64': _frontImageB64,
-          'imageBackBase64': _backImageB64,
+          'imageFrontRef': frontRef,
+          'imageBackRef': backRef,
           'notes': _notesCtrl.text.trim(),
         };
       case AppConstants.docPAN:
@@ -145,7 +180,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
           'panNumber': _panCtrl.text.trim().toUpperCase(),
           'dateOfBirth': _dobCtrl.text.trim(),
           'fatherName': _fatherCtrl.text.trim(),
-          'imageFrontBase64': _frontImageB64,
+          'imageFrontRef': frontRef,
           'notes': _notesCtrl.text.trim(),
         };
       default: // debit_card / credit_card
@@ -159,23 +194,45 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
           'cvv': _cvvCtrl.text.trim(),
           'pin': _pinCtrl.text.trim(),
           'bankName': _bankCtrl.text.trim(),
-          'imageFrontBase64': _frontImageB64,
-          'imageBackBase64': _backImageB64,
+          'imageFrontRef': frontRef,
+          'imageBackRef': backRef,
           'notes': _notesCtrl.text.trim(),
         };
     }
   }
 
+  // Persists a slot's freshly-picked bytes to the encrypted image store,
+  // or keeps the existing ref unchanged.
+  Future<Map<String, dynamic>?> _persistSlot(
+      _ImageSlot slot, Uint8List kek) async {
+    if (slot.newBytes != null) {
+      return EncryptedImageStore.instance.save(slot.newBytes!, kek);
+    }
+    return slot.ref;
+  }
+
   Future<void> _save() async {
     setState(() => _loading = true);
     try {
+      final kek = KeyManager.instance.currentKEK;
+      if (kek == null) throw StateError('Vault is locked');
+
+      final frontRef = await _persistSlot(_front, kek);
+      final backRef = await _persistSlot(_back, kek);
+
       await saveDocument(
         documentType: _selectedType,
-        data: _buildData(),
+        data: _buildData(frontRef, backRef),
         existingId: widget.existingId,
       );
-      ref.refresh(documentsProvider);
-      if (mounted) context.go(AppRoutes.documents);
+
+      // Remove any images the user replaced or cleared.
+      await EncryptedImageStore.instance.delete(_front.pendingDelete);
+      await EncryptedImageStore.instance.delete(_back.pendingDelete);
+
+      ref.invalidate(documentsProvider);
+      ref.invalidate(vaultCountsProvider);
+      if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context)
@@ -188,13 +245,13 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title:
             Text(widget.existingId != null ? 'Edit Document' : 'Add Document'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.documents),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -212,17 +269,19 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
               const SizedBox(height: 24),
               _ImagePicker(
                 label: 'Front Image',
-                imageB64: _frontImageB64,
-                onPick: () => _pickImage(true),
-                onClear: () => setState(() => _frontImageB64 = null),
+                bytes: _front.newBytes,
+                imageRef: _front.ref,
+                onPick: () => _pickImage(_front),
+                onClear: () => _clearImage(_front),
               ),
               const SizedBox(height: 12),
               if (_selectedType != AppConstants.docPAN)
                 _ImagePicker(
                   label: 'Back Image (optional)',
-                  imageB64: _backImageB64,
-                  onPick: () => _pickImage(false),
-                  onClear: () => setState(() => _backImageB64 = null),
+                  bytes: _back.newBytes,
+                  imageRef: _back.ref,
+                  onPick: () => _pickImage(_back),
+                  onClear: () => _clearImage(_back),
                 ),
               const SizedBox(height: 14),
               _tf(_notesCtrl, 'Notes (optional)', maxLines: 3),
@@ -290,7 +349,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
             keyboardType: TextInputType.number,
             inputFormatters: [CardNumberFormatter()],
             maxLength: 23,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: TextStyle(color: context.palette.textPrimary),
             decoration: const InputDecoration(
                 labelText: 'Card Number', counterText: ''),
           ),
@@ -335,7 +394,7 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
       maxLines: maxLines,
       maxLength: maxLen,
       obscureText: obscure,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: context.palette.textPrimary),
       decoration: InputDecoration(
           labelText: label, counterText: maxLen != null ? '' : null),
     );
@@ -348,16 +407,16 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: active
-              ? AppColors.primary.withValues(alpha: 0.15)
-              : AppColors.surface,
+              ? context.palette.primary.withValues(alpha: 0.15)
+              : context.palette.surface,
           borderRadius: BorderRadius.circular(8),
           border:
-              Border.all(color: active ? AppColors.primary : AppColors.border),
+              Border.all(color: active ? context.palette.primary : context.palette.border),
         ),
         child: Center(
             child: Text(label,
                 style: TextStyle(
-                    color: active ? AppColors.primary : AppColors.textSecondary,
+                    color: active ? context.palette.primary : context.palette.textSecondary,
                     fontWeight: active ? FontWeight.w600 : FontWeight.normal))),
       ),
     );
@@ -389,11 +448,11 @@ class _TypeSelector extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: active
-                  ? AppColors.primary.withValues(alpha: 0.15)
-                  : AppColors.surface,
+                  ? context.palette.primary.withValues(alpha: 0.15)
+                  : context.palette.surface,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: active ? AppColors.primary : AppColors.border),
+                  color: active ? context.palette.primary : context.palette.border),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -401,13 +460,13 @@ class _TypeSelector extends StatelessWidget {
                 Icon(t.$3,
                     size: 16,
                     color:
-                        active ? AppColors.primary : AppColors.textSecondary),
+                        active ? context.palette.primary : context.palette.textSecondary),
                 const SizedBox(width: 6),
                 Text(t.$2,
                     style: TextStyle(
                         color: active
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
+                            ? context.palette.primary
+                            : context.palette.textSecondary,
                         fontSize: 13)),
               ],
             ),
@@ -443,16 +502,16 @@ class _NetworkSelector extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: active
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : AppColors.surface,
+                    ? context.palette.primary.withValues(alpha: 0.15)
+                    : context.palette.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: active ? AppColors.primary : AppColors.border),
+                    color: active ? context.palette.primary : context.palette.border),
               ),
               child: Text(n.$2,
                   style: TextStyle(
                       color:
-                          active ? AppColors.primary : AppColors.textSecondary,
+                          active ? context.palette.primary : context.palette.textSecondary,
                       fontSize: 12,
                       fontWeight:
                           active ? FontWeight.w600 : FontWeight.normal)),
@@ -466,33 +525,41 @@ class _NetworkSelector extends StatelessWidget {
 
 class _ImagePicker extends StatelessWidget {
   final String label;
-  final String? imageB64;
+  final Uint8List? bytes;
+  final Map<String, dynamic>? imageRef;
   final VoidCallback onPick;
   final VoidCallback onClear;
 
   const _ImagePicker(
       {required this.label,
-      this.imageB64,
+      this.bytes,
+      this.imageRef,
       required this.onPick,
       required this.onClear});
 
   @override
   Widget build(BuildContext context) {
-    if (imageB64 != null) {
+    if (bytes != null || imageRef != null) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(
-                  color: AppColors.textSecondary, fontSize: 13)),
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 13)),
           const SizedBox(height: 6),
           Stack(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.memory(base64.decode(imageB64!),
-                    height: 120, width: double.infinity, fit: BoxFit.cover),
-              ),
+              if (bytes != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.memory(bytes!,
+                      height: 120,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      cacheWidth: 720),
+                )
+              else
+                EncryptedImageView(imageRef: imageRef, height: 120),
               Positioned(
                 top: 6,
                 right: 6,
@@ -517,17 +584,17 @@ class _ImagePicker extends StatelessWidget {
       child: Container(
         height: 72,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: context.palette.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+          border: Border.all(color: context.palette.border, style: BorderStyle.solid),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add_photo_alternate_outlined,
-                color: AppColors.primary),
+            Icon(Icons.add_photo_alternate_outlined,
+                color: context.palette.primary),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(color: AppColors.textSecondary)),
+            Text(label, style: TextStyle(color: context.palette.textSecondary)),
           ],
         ),
       ),

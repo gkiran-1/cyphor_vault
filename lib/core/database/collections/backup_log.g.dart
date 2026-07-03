@@ -15,7 +15,7 @@ extension GetBackupLogCollection on Isar {
 
 const BackupLogSchema = CollectionSchema(
   name: r'BackupLog',
-  id: -4066099081140660736,
+  id: -4066099081140660677,
   properties: {
     r'backupDate': PropertySchema(
       id: 0,

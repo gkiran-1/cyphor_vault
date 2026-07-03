@@ -74,6 +74,7 @@ dependencies:
 
   # Cupertino icons
   cupertino_icons: ^1.0.8
+  appflowy_editor: ^6.0.0
 
 dev_dependencies:
   flutter_test:

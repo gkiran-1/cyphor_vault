@@ -5,8 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/auth_service.dart';
 import '../../../core/encryption/key_manager.dart';
 import '../../../core/utils/validators.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -55,7 +54,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Password changed successfully')));
-        context.go(AppRoutes.settings);
+        context.pop();
       }
     } catch (e) {
       setState(() {
@@ -68,7 +67,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: const Text('Change Password')),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -78,10 +77,10 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Your master password protects all vault data. After changing it, all existing encrypted data remains accessible.',
                   style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: context.palette.textSecondary,
                       fontSize: 14,
                       height: 1.5),
                 ),
@@ -105,8 +104,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                 if (_error != null) ...[
                   const SizedBox(height: 12),
                   Text(_error!,
-                      style: const TextStyle(
-                          color: AppColors.error, fontSize: 13)),
+                      style: TextStyle(
+                          color: context.palette.error, fontSize: 13)),
                 ],
                 const SizedBox(height: 32),
                 ElevatedButton(
@@ -137,7 +136,7 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
     return TextFormField(
       controller: ctrl,
       obscureText: obscure,
-      style: const TextStyle(color: AppColors.textPrimary),
+      style: TextStyle(color: context.palette.textPrimary),
       decoration: InputDecoration(
         labelText: label,
         suffixIcon: Row(
@@ -148,12 +147,12 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                   obscure
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: AppColors.textSecondary),
+                  color: context.palette.textSecondary),
               onPressed: toggle,
             ),
             IconButton(
-              icon: const Icon(Icons.copy_outlined,
-                  size: 20, color: AppColors.textSecondary),
+              icon: Icon(Icons.copy_outlined,
+                  size: 20, color: context.palette.textSecondary),
               tooltip: 'Copy',
               onPressed: () async {
                 final text = ctrl.text;

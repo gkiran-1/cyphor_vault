@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../theme/app_palette.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -23,12 +24,28 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: AppColors.border),
-            const SizedBox(height: 20),
+            Container(
+              width: 104,
+              height: 104,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
+                shape: BoxShape.circle,
+                border: Border.all(color: context.palette.border, width: 1),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 48, color: context.palette.textSecondary),
+            )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .moveY(
+                    begin: 0,
+                    end: -8,
+                    duration: 2200.ms,
+                    curve: Curves.easeInOut),
+            const SizedBox(height: 24),
             Text(
               title,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
+              style: TextStyle(
+                color: context.palette.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -37,13 +54,17 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: TextStyle(
+                  color: context.palette.textSecondary, fontSize: 14),
               textAlign: TextAlign.center,
             ),
-            if (action != null) ...[const SizedBox(height: 24), action!],
+            if (action != null) ...[const SizedBox(height: 28), action!],
           ],
         ),
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.08, duration: 400.ms, curve: Curves.easeOut);
   }
 }

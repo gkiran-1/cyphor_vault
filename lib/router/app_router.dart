@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../core/providers/auth_providers.dart';
@@ -25,6 +25,9 @@ import '../features/settings/screens/settings_screen.dart';
 import '../features/settings/screens/security_settings_screen.dart';
 import '../features/settings/screens/backup_settings_screen.dart';
 import '../features/settings/screens/change_pin_screen.dart';
+import '../features/pages/screens/pages_list_screen.dart';
+import '../features/pages/screens/page_editor_screen.dart';
+import '../features/pages/screens/page_view_screen.dart';
 
 class AppRoutes {
   static const splash = '/';
@@ -52,6 +55,38 @@ class AppRoutes {
   static const securitySettings = '/settings/security';
   static const backupSettings = '/settings/backup';
   static const changePin = '/settings/change-pin';
+  static const pages = '/pages';
+  static const addPage = '/pages/add';
+  static const editPage = '/pages/edit';
+  static const pageDetail = '/pages/detail';
+}
+
+// Slide-in from right (for detail/add routes)
+CustomTransitionPage<void> _slidePage(LocalKey key, Widget child) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    transitionsBuilder: (_, animation, __, child) => SlideTransition(
+      position: Tween(
+        begin: const Offset(1.0, 0.0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut)),
+      child: child,
+    ),
+  );
+}
+
+// Fade (for root-level routes)
+CustomTransitionPage<void> _fadePage(LocalKey key, Widget child) {
+  return CustomTransitionPage<void>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    transitionsBuilder: (_, animation, __, child) =>
+        FadeTransition(opacity: animation, child: child),
+  );
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -87,100 +122,213 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
     },
     routes: [
-      GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
+      // Root / auth routes — fade transition
       GoRoute(
-          path: AppRoutes.welcome, builder: (_, __) => const WelcomeScreen()),
-      GoRoute(
-          path: AppRoutes.setupPin, builder: (_, __) => const SetupPinScreen()),
-      GoRoute(
-        path: AppRoutes.setupRecovery,
-        builder: (_, state) =>
-            SetupRecoveryScreen(recoveryPhrase: state.extra as String),
+        path: AppRoutes.splash,
+        pageBuilder: (_, state) => _fadePage(state.pageKey, const SplashScreen()),
       ),
       GoRoute(
-          path: AppRoutes.setupBiometric,
-          builder: (_, __) => const SetupBiometricScreen()),
+        path: AppRoutes.welcome,
+        pageBuilder: (_, state) => _fadePage(state.pageKey, const WelcomeScreen()),
+      ),
       GoRoute(
-          path: AppRoutes.setupBackup,
-          builder: (_, __) => const SetupBackupScreen()),
+        path: AppRoutes.pinEntry,
+        pageBuilder: (_, state) => _fadePage(state.pageKey, const PinEntryScreen()),
+      ),
       GoRoute(
-          path: AppRoutes.setupComplete,
-          builder: (_, __) => const SetupCompleteScreen()),
+        path: AppRoutes.recoveryEntry,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const RecoveryEntryScreen()),
+      ),
       GoRoute(
-          path: AppRoutes.pinEntry, builder: (_, __) => const PinEntryScreen()),
+        path: AppRoutes.home,
+        pageBuilder: (_, state) => _fadePage(state.pageKey, const HomeScreen()),
+      ),
+
+      // Onboarding — slide right
       GoRoute(
-          path: AppRoutes.recoveryEntry,
-          builder: (_, __) => const RecoveryEntryScreen()),
-      GoRoute(path: AppRoutes.home, builder: (_, __) => const HomeScreen()),
+        path: AppRoutes.setupPin,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const SetupPinScreen()),
+      ),
       GoRoute(
-          path: AppRoutes.passwords,
-          builder: (_, __) => const PasswordsListScreen()),
+        path: AppRoutes.setupRecovery,
+        pageBuilder: (_, state) => _slidePage(
+          state.pageKey,
+          SetupRecoveryScreen(recoveryPhrase: state.extra as String),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.setupBiometric,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const SetupBiometricScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.setupBackup,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const SetupBackupScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.setupComplete,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const SetupCompleteScreen()),
+      ),
+
+      // List screens — fade from home
+      GoRoute(
+        path: AppRoutes.passwords,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const PasswordsListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.documents,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const DocumentsListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.notes,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const NotesListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.pages,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const PagesListScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        pageBuilder: (_, state) =>
+            _fadePage(state.pageKey, const SettingsScreen()),
+      ),
+
+      // Detail / add / edit routes — slide right
       GoRoute(
         path: AppRoutes.addPassword,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return AddEditPasswordScreen(
-            existingId: args?['id'],
-            existingData: args?['data'],
+          return _slidePage(
+            state.pageKey,
+            AddEditPasswordScreen(
+              existingId: args?['id'],
+              existingData: args?['data'],
+            ),
           );
         },
       ),
       GoRoute(
         path: AppRoutes.passwordDetail,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return PasswordDetailScreen(id: args['id'], data: args['data']);
+          return _slidePage(
+            state.pageKey,
+            PasswordDetailScreen(id: args['id'], data: args['data']),
+          );
         },
       ),
       GoRoute(
-          path: AppRoutes.documents,
-          builder: (_, __) => const DocumentsListScreen()),
-      GoRoute(
         path: AppRoutes.addDocument,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return AddDocumentScreen(
+          return _slidePage(
+            state.pageKey,
+            AddDocumentScreen(
               existingId: args?['id'],
               existingData: args?['data'],
-              documentType: args?['type']);
+              documentType: args?['type'],
+            ),
+          );
         },
       ),
       GoRoute(
         path: AppRoutes.documentDetail,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return DocumentDetailScreen(
-              id: args['id'], documentType: args['type'], data: args['data']);
+          return _slidePage(
+            state.pageKey,
+            DocumentDetailScreen(
+              id: args['id'],
+              documentType: args['type'],
+              data: args['data'],
+            ),
+          );
         },
       ),
       GoRoute(
-          path: AppRoutes.notes, builder: (_, __) => const NotesListScreen()),
-      GoRoute(
         path: AppRoutes.addNote,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return AddEditNoteScreen(
-              existingId: args?['id'], existingData: args?['data']);
+          return _slidePage(
+            state.pageKey,
+            AddEditNoteScreen(
+              existingId: args?['id'],
+              existingData: args?['data'],
+            ),
+          );
         },
       ),
       GoRoute(
         path: AppRoutes.noteDetail,
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return NoteDetailScreen(id: args['id'], data: args['data']);
+          return _slidePage(
+            state.pageKey,
+            NoteDetailScreen(id: args['id'], data: args['data']),
+          );
         },
       ),
       GoRoute(
-          path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
+        path: AppRoutes.addPage,
+        pageBuilder: (_, state) {
+          final args = state.extra as Map<String, dynamic>?;
+          return _slidePage(
+            state.pageKey,
+            PageEditorScreen(
+              existingId: args?['id'],
+              existingData: args?['data'],
+            ),
+          );
+        },
+      ),
       GoRoute(
-          path: AppRoutes.securitySettings,
-          builder: (_, __) => const SecuritySettingsScreen()),
+        path: AppRoutes.editPage,
+        pageBuilder: (_, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return _slidePage(
+            state.pageKey,
+            PageEditorScreen(
+              existingId: args['id'],
+              existingData: args['data'],
+            ),
+          );
+        },
+      ),
       GoRoute(
-          path: AppRoutes.backupSettings,
-          builder: (_, __) => const BackupSettingsScreen()),
+        path: AppRoutes.pageDetail,
+        pageBuilder: (_, state) {
+          final args = state.extra as Map<String, dynamic>;
+          return _slidePage(
+            state.pageKey,
+            PageViewScreen(id: args['id'], data: args['data']),
+          );
+        },
+      ),
+
+      // Settings sub-screens — slide right
       GoRoute(
-          path: AppRoutes.changePin,
-          builder: (_, __) => const ChangePinScreen()),
+        path: AppRoutes.securitySettings,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const SecuritySettingsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.backupSettings,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const BackupSettingsScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.changePin,
+        pageBuilder: (_, state) =>
+            _slidePage(state.pageKey, const ChangePinScreen()),
+      ),
     ],
   );
 });

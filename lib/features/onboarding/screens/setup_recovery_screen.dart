@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class SetupRecoveryScreen extends StatefulWidget {
   final String recoveryPhrase;
@@ -29,7 +29,7 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
     final groups = widget.recoveryPhrase.split('-');
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -42,17 +42,17 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.warning.withValues(alpha: 0.15),
+                      color: context.palette.warning.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.key_rounded, color: AppColors.warning, size: 28),
+                    child: Icon(Icons.key_rounded, color: context.palette.warning, size: 28),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Save Your Recovery Phrase',
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: context.palette.textPrimary,
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                       ),
@@ -64,14 +64,14 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withValues(alpha: 0.08),
+                  color: context.palette.warning.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  border: Border.all(color: context.palette.warning.withValues(alpha: 0.3)),
                 ),
-                child: const Text(
+                child: Text(
                   'If you forget your PIN, this phrase is the ONLY way to recover your vault. Write it down and store it somewhere safe.\n\nDo NOT screenshot or store digitally.',
                   style: TextStyle(
-                    color: AppColors.warning,
+                    color: context.palette.warning,
                     fontSize: 13,
                     height: 1.5,
                   ),
@@ -81,9 +81,9 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: context.palette.surface,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: context.palette.border),
                 ),
                 child: Column(
                   children: [
@@ -102,20 +102,20 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
                       icon: Icon(
                         _copied ? Icons.check : Icons.copy_outlined,
                         size: 16,
-                        color: _copied ? AppColors.success : AppColors.textSecondary,
+                        color: _copied ? context.palette.success : context.palette.textSecondary,
                       ),
                       label: Text(
                         _copied ? 'Copied!' : 'Copy to clipboard',
                         style: TextStyle(
-                          color: _copied ? AppColors.success : AppColors.textSecondary,
+                          color: _copied ? context.palette.success : context.palette.textSecondary,
                           fontSize: 13,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
                           color: _copied
-                              ? AppColors.success.withValues(alpha: 0.4)
-                              : AppColors.border,
+                              ? context.palette.success.withValues(alpha: 0.4)
+                              : context.palette.border,
                         ),
                       ),
                     ),
@@ -126,12 +126,12 @@ class _SetupRecoveryScreenState extends State<SetupRecoveryScreen> {
               CheckboxListTile(
                 value: _confirmed,
                 onChanged: (v) => setState(() => _confirmed = v ?? false),
-                activeColor: AppColors.primary,
+                activeColor: context.palette.primary,
                 checkColor: Colors.black,
                 contentPadding: EdgeInsets.zero,
-                title: const Text(
+                title: Text(
                   'I have written down my recovery phrase and stored it safely.',
-                  style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.4),
+                  style: TextStyle(color: context.palette.textPrimary, fontSize: 14, height: 1.4),
                 ),
               ),
               const SizedBox(height: 24),
@@ -162,22 +162,22 @@ class _GroupChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: context.palette.surfaceLight,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             '$index.',
-            style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            style: TextStyle(color: context.palette.textSecondary, fontSize: 11),
           ),
           const SizedBox(width: 4),
           Text(
             value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.palette.textPrimary,
               fontSize: 16,
               fontWeight: FontWeight.w600,
               letterSpacing: 2,

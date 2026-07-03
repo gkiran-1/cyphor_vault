@@ -15,7 +15,7 @@ extension GetDocumentEntryCollection on Isar {
 
 const DocumentEntrySchema = CollectionSchema(
   name: r'DocumentEntry',
-  id: -5441240361459940352,
+  id: -5441240361459940692,
   properties: {
     r'createdAt': PropertySchema(
       id: 0,

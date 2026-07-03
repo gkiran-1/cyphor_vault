@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../core/auth/pin_service.dart';
-import '../../../core/providers/auth_providers.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class PinEntryScreen extends ConsumerStatefulWidget {
   const PinEntryScreen({super.key});
@@ -14,25 +14,44 @@ class PinEntryScreen extends ConsumerStatefulWidget {
   ConsumerState<PinEntryScreen> createState() => _PinEntryScreenState();
 }
 
-class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
+class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
+    with SingleTickerProviderStateMixin {
   final _controller = TextEditingController();
+  late final AnimationController _shakeController;
   bool _loading = false;
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
   Future<void> _onPINComplete(String pin) async {
     if (_loading) return;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
     final pinService = PINService.instance;
 
     if (pinService.isLocked) {
-      setState(() { _error = 'Too many attempts. Use recovery phrase to reset.'; _loading = false; });
+      setState(() {
+        _error = 'Too many attempts. Use recovery phrase to reset.';
+        _loading = false;
+      });
+      _shakeController.forward(from: 0);
       return;
     }
 
@@ -50,6 +69,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
             : 'Incorrect PIN. $remaining attempt${remaining == 1 ? '' : 's'} remaining.';
         _loading = false;
       });
+      _shakeController.forward(from: 0);
     }
   }
 
@@ -57,74 +77,108 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen> {
   Widget build(BuildContext context) {
     final pinService = PINService.instance;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 56),
+              const Spacer(flex: 2),
+              Icon(Icons.lock_outline_rounded,
+                      color: context.palette.primary, size: 56)
+                  .animate()
+                  .fadeIn(duration: 500.ms)
+                  .scale(
+                      begin: const Offset(0.8, 0.8),
+                      duration: 500.ms,
+                      curve: Curves.easeOutBack),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Enter PIN',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
+              ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Enter your PIN to unlock CipherBox',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style:
+                    TextStyle(color: context.palette.textSecondary, fontSize: 14),
                 textAlign: TextAlign.center,
-              ),
+              ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
               const SizedBox(height: 48),
-              PinCodeTextField(
-                appContext: context,
-                length: 6,
-                controller: _controller,
-                obscureText: true,
-                obscuringCharacter: '●',
-                animationType: AnimationType.fade,
-                keyboardType: TextInputType.number,
-                enabled: !pinService.isLocked && !_loading,
-                pinTheme: PinTheme(
-                  shape: PinCodeFieldShape.box,
-                  borderRadius: BorderRadius.circular(10),
-                  fieldHeight: 52,
-                  fieldWidth: 44,
-                  activeFillColor: AppColors.surfaceLight,
-                  inactiveFillColor: AppColors.surface,
-                  selectedFillColor: AppColors.surfaceLight,
-                  activeColor: AppColors.primary,
-                  inactiveColor: AppColors.border,
-                  selectedColor: AppColors.primary,
+              Animate(
+                autoPlay: false,
+                controller: _shakeController,
+                onComplete: (c) => c.reset(),
+                effects: const [ShakeEffect(hz: 4, offset: Offset(6, 0))],
+                child: PinCodeTextField(
+                  appContext: context,
+                  length: 6,
+                  controller: _controller,
+                  obscureText: true,
+                  obscuringCharacter: '●',
+                  animationType: AnimationType.fade,
+                  keyboardType: TextInputType.number,
+                  enabled: !pinService.isLocked && !_loading,
+                  pinTheme: PinTheme(
+                    shape: PinCodeFieldShape.box,
+                    borderRadius: BorderRadius.circular(10),
+                    fieldHeight: 52,
+                    fieldWidth: 44,
+                    activeFillColor: context.palette.surfaceLight,
+                    inactiveFillColor: context.palette.surface,
+                    selectedFillColor: context.palette.surfaceLight,
+                    activeColor: context.palette.primary,
+                    inactiveColor: context.palette.border,
+                    selectedColor: context.palette.primary,
+                  ),
+                  enableActiveFill: true,
+                  onChanged: (_) => setState(() => _error = null),
+                  onCompleted: _onPINComplete,
                 ),
-                enableActiveFill: true,
-                onChanged: (_) => setState(() => _error = null),
-                onCompleted: _onPINComplete,
-              ),
+              ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13),
-                    textAlign: TextAlign.center),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline,
+                        color: context.palette.error, size: 14),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                            color: context.palette.error, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
               ],
               if (_loading) ...[
                 const SizedBox(height: 20),
-                const CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                CircularProgressIndicator(
+                    color: context.palette.primary, strokeWidth: 2),
               ],
-              const SizedBox(height: 32),
+              const Spacer(flex: 2),
               TextButton(
                 onPressed: () => context.go(AppRoutes.recoveryEntry),
-                child: const Text('Forgot PIN? Recover vault',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-              ),
+                child: Text('Forgot PIN? Recover vault',
+                    style: TextStyle(
+                        color: context.palette.textSecondary, fontSize: 13)),
+              ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+              const SizedBox(height: 16),
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 
 class PasswordStrengthIndicator extends StatelessWidget {
   final int strength; // 0–4
 
   const PasswordStrengthIndicator({super.key, required this.strength});
 
-  Color get _color {
+  Color _color(BuildContext context) {
     switch (strength) {
-      case 0: return AppColors.error;
-      case 1: return AppColors.error;
-      case 2: return AppColors.warning;
+      case 0: return context.palette.error;
+      case 1: return context.palette.error;
+      case 2: return context.palette.warning;
       case 3: return const Color(0xFF8BC34A);
-      default: return AppColors.success;
+      default: return context.palette.success;
     }
   }
 
@@ -38,7 +38,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
                 margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
                 height: 4,
                 decoration: BoxDecoration(
-                  color: i < strength ? _color : AppColors.border,
+                  color: i < strength ? _color(context) : context.palette.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -47,7 +47,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
         ),
         if (strength > 0) ...[
           const SizedBox(height: 4),
-          Text(_label, style: TextStyle(color: _color, fontSize: 12)),
+          Text(_label, style: TextStyle(color: _color(context), fontSize: 12)),
         ],
       ],
     );

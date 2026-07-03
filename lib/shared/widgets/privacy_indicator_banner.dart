@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_palette.dart';
 
 /// A privacy indicator banner to show when sensitive data is visible.
 class PrivacyIndicatorBanner extends StatelessWidget {
@@ -12,22 +12,22 @@ class PrivacyIndicatorBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.95),
+        color: context.palette.warning.withOpacity(0.95),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.palette.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(Icons.privacy_tip_outlined,
-                  color: AppColors.textPrimary),
+              Icon(Icons.privacy_tip_outlined,
+                  color: context.palette.textPrimary),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Sensitive data visible',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color: context.palette.textPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
                 ),
@@ -37,8 +37,8 @@ class PrivacyIndicatorBanner extends StatelessWidget {
           if (onHide != null)
             TextButton(
               onPressed: onHide,
-              child: const Text('Hide',
-                  style: TextStyle(color: AppColors.textPrimary)),
+              child: Text('Hide',
+                  style: TextStyle(color: context.palette.textPrimary)),
             ),
         ],
       ),

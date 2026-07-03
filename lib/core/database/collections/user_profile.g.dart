@@ -15,7 +15,7 @@ extension GetUserProfileCollection on Isar {
 
 const UserProfileSchema = CollectionSchema(
   name: r'UserProfile',
-  id: 4738427352541298688,
+  id: 4738427352541298891,
   properties: {
     r'autoBackupEnabled': PropertySchema(
       id: 0,

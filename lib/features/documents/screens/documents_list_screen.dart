@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/database/isar_service.dart';
 import '../../../core/providers/vault_providers.dart';
+import '../../../core/storage/encrypted_image_store.dart';
 import '../../../core/utils/constants.dart';
 import '../../../router/app_router.dart';
-import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_palette.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/empty_state.dart';
 
@@ -18,17 +20,17 @@ class DocumentsListScreen extends ConsumerWidget {
     final docs = ref.watch(documentsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: const Text('Documents'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go(AppRoutes.home),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.go(AppRoutes.addDocument),
+            onPressed: () => context.push(AppRoutes.addDocument),
           ),
         ],
       ),
@@ -40,12 +42,13 @@ class DocumentsListScreen extends ConsumerWidget {
               title: 'No documents yet',
               subtitle: 'Tap + to add Aadhaar, PAN, or cards',
               action: ElevatedButton(
-                onPressed: () => context.go(AppRoutes.addDocument),
+                onPressed: () => context.push(AppRoutes.addDocument),
                 child: const Text('Add Document'),
               ),
             );
           }
           return ListView.builder(
+            padding: const EdgeInsets.only(top: 8, bottom: 88),
             itemCount: items.length,
             itemBuilder: (ctx, i) {
               final item = items[i];
@@ -56,12 +59,15 @@ class DocumentsListScreen extends ConsumerWidget {
                 type: type,
                 data: data,
                 onDeleted: () => ref.refresh(documentsProvider),
-              );
+              )
+                  .animate(delay: (i * 50).ms)
+                  .fadeIn(duration: 250.ms)
+                  .slideX(begin: -0.04, duration: 250.ms, curve: Curves.easeOut);
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (e, _) => Center(child: Text('$e', style: const TextStyle(color: AppColors.error))),
+        loading: () => Center(child: CircularProgressIndicator(color: context.palette.primary)),
+        error: (e, _) => Center(child: Text('$e', style: TextStyle(color: context.palette.error))),
       ),
     );
   }
@@ -115,10 +121,17 @@ class _DocumentTile extends StatelessWidget {
                   destructive: true);
               if (confirm) {
                 await IsarService.instance.deleteDocument(id);
+                for (final k in ['imageFrontRef', 'imageBackRef']) {
+                  final r = data[k];
+                  if (r is Map) {
+                    await EncryptedImageStore.instance
+                        .delete(Map<String, dynamic>.from(r));
+                  }
+                }
                 onDeleted();
               }
             },
-            backgroundColor: AppColors.error,
+            backgroundColor: context.palette.error,
             foregroundColor: Colors.white,
             icon: Icons.delete_outline,
             label: 'Delete',
@@ -127,7 +140,7 @@ class _DocumentTile extends StatelessWidget {
       ),
       child: Card(
         child: InkWell(
-          onTap: () => context.go(AppRoutes.documentDetail,
+          onTap: () => context.push(AppRoutes.documentDetail,
               extra: {'id': id, 'type': type, 'data': data}),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
@@ -138,11 +151,11 @@ class _DocumentTile extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceLight,
+                    color: context.palette.surfaceLight,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: context.palette.border),
                   ),
-                  child: Icon(_icon, color: AppColors.primary, size: 22),
+                  child: Icon(_icon, color: context.palette.primary, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -150,16 +163,16 @@ class _DocumentTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(_typeLabel,
-                          style: const TextStyle(
-                              color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                          style: TextStyle(
+                              color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
                       if (_subtitle.isNotEmpty)
                         Text(_subtitle,
-                            style: const TextStyle(
-                                color: AppColors.textSecondary, fontSize: 13)),
+                            style: TextStyle(
+                                color: context.palette.textSecondary, fontSize: 13)),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 18),
+                Icon(Icons.chevron_right, color: context.palette.textSecondary, size: 18),
               ],
             ),
           ),
