@@ -37,7 +37,7 @@ class BackupStatusBanner extends ConsumerWidget {
           color: color,
           icon: Icons.cloud_outlined,
           message: 'Last backup: ${daysSince == 1 ? '1 day' : '$daysSince days'} ago. Backup now →',
-          onTap: () => context.go(AppRoutes.backupSettings),
+          onTap: () => context.push(AppRoutes.backupSettings),
         );
       },
       loading: () => const SizedBox.shrink(),
