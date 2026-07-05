@@ -210,6 +210,7 @@ class _SetupPinScreenState extends ConsumerState<SetupPinScreen> {
       appContext: context,
       length: 6,
       controller: ctrl,
+      autoDisposeControllers: false,
       obscureText: true,
       keyboardType: TextInputType.number,
       autoDismissKeyboard: true,

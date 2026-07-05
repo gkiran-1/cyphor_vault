@@ -99,6 +99,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                       appContext: context,
                       length: 6,
                       controller: _newPinCtrl,
+                      autoDisposeControllers: false,
                       obscureText: true,
                       keyboardType: TextInputType.number,
                       pinTheme: PinTheme(

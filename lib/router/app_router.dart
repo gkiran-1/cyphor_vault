@@ -61,25 +61,9 @@ class AppRoutes {
   static const pageDetail = '/pages/detail';
 }
 
-// Slide-in from right (for detail/add routes)
-CustomTransitionPage<void> _slidePage(LocalKey key, Widget child) {
-  return CustomTransitionPage<void>(
-    key: key,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 280),
-    reverseTransitionDuration: const Duration(milliseconds: 220),
-    transitionsBuilder: (_, animation, __, child) => SlideTransition(
-      position: Tween(
-        begin: const Offset(1.0, 0.0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeInOut)),
-      child: child,
-    ),
-  );
-}
-
-// Fade (for root-level routes)
-CustomTransitionPage<void> _fadePage(LocalKey key, Widget child) {
+// Fade transition for root-level screens only (splash, home, auth).
+// These intentionally do NOT support swipe-back / system back gesture.
+CustomTransitionPage<void> _noPopFadePage(LocalKey key, Widget child) {
   return CustomTransitionPage<void>(
     key: key,
     child: child,
@@ -89,14 +73,29 @@ CustomTransitionPage<void> _fadePage(LocalKey key, Widget child) {
   );
 }
 
+// Notifier that bridges Riverpod's authStateProvider to GoRouter's
+// refreshListenable, so auth changes trigger redirect re-evaluation
+// WITHOUT recreating the GoRouter (which would destroy the nav stack).
+final _authNotifierProvider = Provider<AuthChangeNotifier>((ref) {
+  final notifier = AuthChangeNotifier();
+  ref.listen<AuthState>(authStateProvider, (_, __) => notifier.notify());
+  ref.onDispose(notifier.dispose);
+  return notifier;
+});
+
+class AuthChangeNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authNotifier = ref.watch(_authNotifierProvider);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
+    refreshListenable: authNotifier,
     redirect: (context, state) {
       final path = state.matchedLocation;
-      final status = authState.status;
+      final status = ref.read(authStateProvider).status;
 
       // Debug logging
       debugPrint('Redirect: Current path: $path, AuthStatus: $status');
@@ -117,7 +116,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (!isAuth) return AppRoutes.pinEntry;
           return null;
         case AuthStatus.authenticated:
-          if (isAuth || isOnboarding) return AppRoutes.home;
+          // Only redirect auth screens (splash, pin-entry, recovery-entry)
+          // to home. Do NOT redirect onboarding screens — the onboarding
+          // flow sets status to authenticated during setup (createAccount)
+          // and manages its own navigation to recovery → biometric → home.
+          if (isAuth) return AppRoutes.home;
           return null;
       }
     },
@@ -125,90 +128,90 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Root / auth routes — fade transition
       GoRoute(
         path: AppRoutes.splash,
-        pageBuilder: (_, state) => _fadePage(state.pageKey, const SplashScreen()),
+        pageBuilder: (_, state) => _noPopFadePage(state.pageKey, const SplashScreen()),
       ),
       GoRoute(
         path: AppRoutes.welcome,
-        pageBuilder: (_, state) => _fadePage(state.pageKey, const WelcomeScreen()),
+        pageBuilder: (_, state) => _noPopFadePage(state.pageKey, const WelcomeScreen()),
       ),
       GoRoute(
         path: AppRoutes.pinEntry,
-        pageBuilder: (_, state) => _fadePage(state.pageKey, const PinEntryScreen()),
+        pageBuilder: (_, state) => _noPopFadePage(state.pageKey, const PinEntryScreen()),
       ),
       GoRoute(
         path: AppRoutes.recoveryEntry,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const RecoveryEntryScreen()),
+            _noPopFadePage(state.pageKey, const RecoveryEntryScreen()),
       ),
       GoRoute(
         path: AppRoutes.home,
-        pageBuilder: (_, state) => _fadePage(state.pageKey, const HomeScreen()),
+        pageBuilder: (_, state) => _noPopFadePage(state.pageKey, const HomeScreen()),
       ),
 
-      // Onboarding — slide right
+      // Onboarding — platform default transition
       GoRoute(
         path: AppRoutes.setupPin,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const SetupPinScreen()),
+            MaterialPage(key: state.pageKey, child: const SetupPinScreen()),
       ),
       GoRoute(
         path: AppRoutes.setupRecovery,
-        pageBuilder: (_, state) => _slidePage(
-          state.pageKey,
-          SetupRecoveryScreen(recoveryPhrase: state.extra as String),
+        pageBuilder: (_, state) => MaterialPage(
+          key: state.pageKey,
+          child: SetupRecoveryScreen(recoveryPhrase: state.extra as String),
         ),
       ),
       GoRoute(
         path: AppRoutes.setupBiometric,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const SetupBiometricScreen()),
+            MaterialPage(key: state.pageKey, child: const SetupBiometricScreen()),
       ),
       GoRoute(
         path: AppRoutes.setupBackup,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const SetupBackupScreen()),
+            MaterialPage(key: state.pageKey, child: const SetupBackupScreen()),
       ),
       GoRoute(
         path: AppRoutes.setupComplete,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const SetupCompleteScreen()),
+            MaterialPage(key: state.pageKey, child: const SetupCompleteScreen()),
       ),
 
-      // List screens — fade from home
+      // List screens — platform default transition (supports back gesture)
       GoRoute(
         path: AppRoutes.passwords,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const PasswordsListScreen()),
+            MaterialPage(key: state.pageKey, child: const PasswordsListScreen()),
       ),
       GoRoute(
         path: AppRoutes.documents,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const DocumentsListScreen()),
+            MaterialPage(key: state.pageKey, child: const DocumentsListScreen()),
       ),
       GoRoute(
         path: AppRoutes.notes,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const NotesListScreen()),
+            MaterialPage(key: state.pageKey, child: const NotesListScreen()),
       ),
       GoRoute(
         path: AppRoutes.pages,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const PagesListScreen()),
+            MaterialPage(key: state.pageKey, child: const PagesListScreen()),
       ),
       GoRoute(
         path: AppRoutes.settings,
         pageBuilder: (_, state) =>
-            _fadePage(state.pageKey, const SettingsScreen()),
+            MaterialPage(key: state.pageKey, child: const SettingsScreen()),
       ),
 
-      // Detail / add / edit routes — slide right
+      // Detail / add / edit routes — platform default (supports back gesture)
       GoRoute(
         path: AppRoutes.addPassword,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return _slidePage(
-            state.pageKey,
-            AddEditPasswordScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: AddEditPasswordScreen(
               existingId: args?['id'],
               existingData: args?['data'],
             ),
@@ -219,9 +222,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.passwordDetail,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return _slidePage(
-            state.pageKey,
-            PasswordDetailScreen(id: args['id'], data: args['data']),
+          return MaterialPage(
+            key: state.pageKey,
+            child: PasswordDetailScreen(id: args['id'], data: args['data']),
           );
         },
       ),
@@ -229,9 +232,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.addDocument,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return _slidePage(
-            state.pageKey,
-            AddDocumentScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: AddDocumentScreen(
               existingId: args?['id'],
               existingData: args?['data'],
               documentType: args?['type'],
@@ -243,9 +246,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.documentDetail,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return _slidePage(
-            state.pageKey,
-            DocumentDetailScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: DocumentDetailScreen(
               id: args['id'],
               documentType: args['type'],
               data: args['data'],
@@ -257,9 +260,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.addNote,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return _slidePage(
-            state.pageKey,
-            AddEditNoteScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: AddEditNoteScreen(
               existingId: args?['id'],
               existingData: args?['data'],
             ),
@@ -270,9 +273,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.noteDetail,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return _slidePage(
-            state.pageKey,
-            NoteDetailScreen(id: args['id'], data: args['data']),
+          return MaterialPage(
+            key: state.pageKey,
+            child: NoteDetailScreen(id: args['id'], data: args['data']),
           );
         },
       ),
@@ -280,9 +283,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.addPage,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>?;
-          return _slidePage(
-            state.pageKey,
-            PageEditorScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: PageEditorScreen(
               existingId: args?['id'],
               existingData: args?['data'],
             ),
@@ -293,9 +296,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.editPage,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return _slidePage(
-            state.pageKey,
-            PageEditorScreen(
+          return MaterialPage(
+            key: state.pageKey,
+            child: PageEditorScreen(
               existingId: args['id'],
               existingData: args['data'],
             ),
@@ -306,28 +309,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.pageDetail,
         pageBuilder: (_, state) {
           final args = state.extra as Map<String, dynamic>;
-          return _slidePage(
-            state.pageKey,
-            PageViewScreen(id: args['id'], data: args['data']),
+          return MaterialPage(
+            key: state.pageKey,
+            child: PageViewScreen(id: args['id'], data: args['data']),
           );
         },
       ),
 
-      // Settings sub-screens — slide right
+      // Settings sub-screens — platform default (supports back gesture)
       GoRoute(
         path: AppRoutes.securitySettings,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const SecuritySettingsScreen()),
+            MaterialPage(key: state.pageKey, child: const SecuritySettingsScreen()),
       ),
       GoRoute(
         path: AppRoutes.backupSettings,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const BackupSettingsScreen()),
+            MaterialPage(key: state.pageKey, child: const BackupSettingsScreen()),
       ),
       GoRoute(
         path: AppRoutes.changePin,
         pageBuilder: (_, state) =>
-            _slidePage(state.pageKey, const ChangePinScreen()),
+            MaterialPage(key: state.pageKey, child: const ChangePinScreen()),
       ),
     ],
   );

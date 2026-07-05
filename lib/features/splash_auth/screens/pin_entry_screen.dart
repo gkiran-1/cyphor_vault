@@ -121,6 +121,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
                   appContext: context,
                   length: 6,
                   controller: _controller,
+                  autoDisposeControllers: false,
                   obscureText: true,
                   obscuringCharacter: '●',
                   animationType: AnimationType.fade,
