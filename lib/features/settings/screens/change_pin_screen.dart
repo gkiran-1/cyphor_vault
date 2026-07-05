@@ -207,6 +207,7 @@ class _StepWidget extends StatelessWidget {
           appContext: context,
           length: 6,
           controller: ctrl,
+          autoDisposeControllers: false,
           obscureText: true,
           keyboardType: TextInputType.number,
           pinTheme: PinTheme(
