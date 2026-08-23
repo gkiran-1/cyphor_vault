@@ -12,7 +12,7 @@ class PrivacyIndicatorBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: context.palette.warning.withOpacity(0.95),
+        color: context.palette.warning.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: context.palette.border),
       ),

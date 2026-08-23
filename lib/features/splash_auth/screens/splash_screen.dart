@@ -19,10 +19,10 @@ class SplashScreen extends ConsumerWidget {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: context.palette.primary.withOpacity(0.15),
+                color: context.palette.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                    color: context.palette.primary.withOpacity(0.3), width: 1.5),
+                    color: context.palette.primary.withValues(alpha: 0.3), width: 1.5),
               ),
               child: Icon(Icons.lock_outline_rounded,
                   color: context.palette.primary, size: 48),

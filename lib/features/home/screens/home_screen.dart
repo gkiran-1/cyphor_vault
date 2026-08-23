@@ -9,21 +9,49 @@ import '../../../shared/theme/app_palette.dart';
 import '../widgets/vault_card.dart';
 import '../widgets/backup_status_banner.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  DateTime? _lastBackPressTime;
+
+  Future<void> _onBackPressed(BuildContext context) async {
+    final now = DateTime.now();
+    final isSecondPress = _lastBackPressTime != null &&
+        now.difference(_lastBackPressTime!) < const Duration(seconds: 2);
+    debugPrint('HOME_BACK_DEBUG: _onBackPressed lastPress=$_lastBackPressTime isSecondPress=$isSecondPress');
+
+    if (isSecondPress) {
+      debugPrint('HOME_BACK_DEBUG: exiting via SystemNavigator.pop()');
+      await SystemNavigator.pop();
+      return;
+    }
+
+    _lastBackPressTime = now;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final counts = ref.watch(vaultCountsProvider);
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
+        debugPrint('HOME_BACK_DEBUG: onPopInvokedWithResult didPop=$didPop');
         if (didPop) return;
-        final shouldExit = await _confirmExit(context);
-        if (shouldExit) {
-          await SystemNavigator.pop();
-        }
+        await _onBackPressed(context);
       },
       child: Scaffold(
         backgroundColor: context.palette.background,
@@ -186,40 +214,6 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Future<bool> _confirmExit(BuildContext context) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: context.palette.surface,
-        title: Text(
-          'Exit CipherBox?',
-          style: TextStyle(color: context.palette.textPrimary),
-        ),
-        content: Text(
-          'Are you sure you want to exit the app?',
-          style: TextStyle(color: context.palette.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: context.palette.textSecondary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              'Exit',
-              style: TextStyle(color: context.palette.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
   }
 
   void _showAddMenu(BuildContext context) {

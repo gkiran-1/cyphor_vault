@@ -64,10 +64,10 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           fontSize: 16,
           height: 1.6,
         ),
-        bold: TextStyle(fontWeight: FontWeight.w700),
-        italic: TextStyle(fontStyle: FontStyle.italic),
-        underline: TextStyle(decoration: TextDecoration.underline),
-        strikethrough: TextStyle(decoration: TextDecoration.lineThrough),
+        bold: const TextStyle(fontWeight: FontWeight.w700),
+        italic: const TextStyle(fontStyle: FontStyle.italic),
+        underline: const TextStyle(decoration: TextDecoration.underline),
+        strikethrough: const TextStyle(decoration: TextDecoration.lineThrough),
         code: TextStyle(
           fontFamily: 'monospace',
           fontSize: 14,
@@ -246,7 +246,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
         actions: [
           if (_saving)
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: SizedBox(
                   width: 20,
                   height: 20,

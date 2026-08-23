@@ -102,9 +102,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       final isOnboarding =
           path.startsWith('/welcome') || path.startsWith('/setup-');
-      final isAuth = path == AppRoutes.pinEntry ||
-          path == AppRoutes.recoveryEntry ||
-          path == AppRoutes.splash;
+      final isAuthScreen =
+          path == AppRoutes.pinEntry || path == AppRoutes.recoveryEntry;
 
       switch (status) {
         case AuthStatus.unknown:
@@ -113,14 +112,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (!isOnboarding) return AppRoutes.welcome;
           return null;
         case AuthStatus.locked:
-          if (!isAuth) return AppRoutes.pinEntry;
+          // Splash must also redirect here — it is not a valid resting
+          // place once the notifier has resolved to locked.
+          if (!isAuthScreen) return AppRoutes.pinEntry;
           return null;
         case AuthStatus.authenticated:
           // Only redirect auth screens (splash, pin-entry, recovery-entry)
           // to home. Do NOT redirect onboarding screens — the onboarding
           // flow sets status to authenticated during setup (createAccount)
           // and manages its own navigation to recovery → biometric → home.
-          if (isAuth) return AppRoutes.home;
+          if (path == AppRoutes.splash || isAuthScreen) return AppRoutes.home;
           return null;
       }
     },

@@ -25,7 +25,7 @@ class WelcomeScreen extends StatelessWidget {
             children: [
               const Spacer(),
               // Logo — entrance scale + persistent subtle pulse
-              _PulseLogo(),
+              const _PulseLogo(),
               const SizedBox(height: 32),
               Text(
                 'CipherBox',

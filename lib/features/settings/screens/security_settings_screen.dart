@@ -72,7 +72,7 @@ class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen>
                   style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
               value: biometricEnabled,
               onChanged: _toggleBiometric,
-              activeColor: context.palette.primary,
+              activeThumbColor: context.palette.primary,
             ),
           ]),
           const SizedBox(height: 16),

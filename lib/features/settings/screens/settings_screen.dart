@@ -47,10 +47,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           _SectionCard(
             delay: 80,
-            header: _SectionHeader(
+            header: const _SectionHeader(
               label: 'SECURITY',
               icon: Icons.shield_outlined,
-              color: const Color(0xFFFF9800),
+              color: Color(0xFFFF9800),
             ),
             tiles: [
               _SettingsTile(

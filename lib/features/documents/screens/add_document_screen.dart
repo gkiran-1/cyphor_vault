@@ -124,7 +124,9 @@ class _AddDocumentScreenState extends ConsumerState<AddDocumentScreen> {
       _cvvCtrl,
       _pinCtrl,
       _bankCtrl
-    ]) c.dispose();
+    ]) {
+      c.dispose();
+    }
     super.dispose();
   }
 

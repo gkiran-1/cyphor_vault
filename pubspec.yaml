@@ -102,5 +102,3 @@ flutter:
 dependency_overrides:
   appflowy_editor:
     path: ./packages/appflowy_editor
-
-

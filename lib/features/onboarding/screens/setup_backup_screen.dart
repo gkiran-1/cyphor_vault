@@ -40,7 +40,7 @@ class SetupBackupScreen extends StatelessWidget {
                   children: [
                     Icon(Icons.info_outline,
                         color: context.palette.primary, size: 18),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Only encrypted .cipherbox files are uploaded. Google cannot read your data.',

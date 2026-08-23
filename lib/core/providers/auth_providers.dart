@@ -176,6 +176,14 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     final profile = await AuthService.instance.getCurrentProfile();
     state = state.copyWith(profile: profile);
   }
+
+  /// Marks the session authenticated after the vault has already been
+  /// unlocked by another path (e.g. [PINService.verifyPIN] on the PIN
+  /// entry screen), without re-running the unlock itself.
+  Future<void> markAuthenticated() async {
+    final profile = await AuthService.instance.getCurrentProfile();
+    state = state.copyWith(status: AuthStatus.authenticated, profile: profile);
+  }
 }
 
 final authStateProvider = StateNotifierProvider<AuthStateNotifier, AuthState>(

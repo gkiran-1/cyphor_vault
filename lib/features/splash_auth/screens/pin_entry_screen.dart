@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../../core/auth/pin_service.dart';
+import '../../../core/providers/auth_providers.dart';
 import '../../../router/app_router.dart';
 import '../../../shared/theme/app_palette.dart';
 
@@ -59,6 +60,8 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
     if (!mounted) return;
 
     if (success) {
+      await ref.read(authStateProvider.notifier).markAuthenticated();
+      if (!mounted) return;
       setState(() => _loading = false);
     } else {
       final remaining = PINService.maxAttempts - pinService.failedAttempts;

@@ -174,7 +174,7 @@ class _BackupLogsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Text('Recent Backups',
                   style: TextStyle(
                       color: context.palette.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
