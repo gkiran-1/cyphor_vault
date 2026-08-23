@@ -20,8 +20,9 @@ class SessionManager extends WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.hidden:
+        // Only lock when the app is fully backgrounded, NOT on inactive/hidden.
+        // inactive fires during transient system gestures (predictive back,
+        // notification shade, split-screen) and must not trigger a lock.
         _lockVault();
         break;
       case AppLifecycleState.resumed:
