@@ -64,9 +64,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               SliverAppBar(
                 backgroundColor: context.palette.background,
                 pinned: true,
-                expandedHeight: 110,
                 elevation: 0,
                 scrolledUnderElevation: 0,
+                title: Text(
+                  'CipherBox',
+                  style: TextStyle(
+                    color: context.palette.textPrimary,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.6,
+                  ),
+                ),
                 actions: [
                   IconButton(
                     icon: Icon(Icons.settings_outlined,
@@ -74,70 +82,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onPressed: () => context.push(AppRoutes.settings),
                   ),
                 ],
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin,
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 14),
-                  title: Text(
-                    'CipherBox',
-                    style: TextStyle(
-                      color: context.palette.textPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  background: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 54, 20, 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: context.palette.surfaceLight,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: context.palette.border,
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: context.palette.success,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: context.palette.success
-                                          .withValues(alpha: 0.4),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Encrypted · Offline',
-                                style: TextStyle(
-                                  color: context.palette.success,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ),
               const SliverToBoxAdapter(child: BackupStatusBanner()),
               SliverPadding(
