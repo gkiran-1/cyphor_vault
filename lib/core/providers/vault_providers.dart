@@ -44,8 +44,8 @@ Future<void> _migrateDocumentImagesIfNeeded(Uint8List kek) async {
       for (final key in ['imageFront', 'imageBack']) {
         final b64 = data['${key}Base64'];
         if (b64 is String && b64.isNotEmpty) {
-          final refMap = await EncryptedImageStore.instance
-              .save(base64.decode(b64), kek);
+          final refMap =
+              await EncryptedImageStore.instance.save(base64.decode(b64), kek);
           data['${key}Ref'] = refMap;
           data.remove('${key}Base64');
           changed = true;
@@ -69,32 +69,36 @@ Future<void> _migrateDocumentImagesIfNeeded(Uint8List kek) async {
   await _migrationStorage.write(key: _imgMigrationKey, value: '1');
 }
 
-final documentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final documentsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final kek = KeyManager.instance.currentKEK;
   if (kek == null) return [];
   await _migrateDocumentImagesIfNeeded(kek);
   final entries = await IsarService.instance.getAllDocuments();
-  return entries.map((e) {
-    try {
-      final data = CryptoService.instance.decryptVaultItem(
-        encryptedData: e.encryptedData,
-        dataIV: e.dataIV,
-        encryptedItemKey: e.encryptedItemKey,
-        itemKeyIV: e.itemKeyIV,
-        kek: kek,
-      );
-      return {
-        'id': e.id,
-        'uuid': e.uuid,
-        'type': e.documentType,
-        'data': data,
-        'createdAt': e.createdAt,
-        'updatedAt': e.updatedAt,
-      };
-    } catch (_) {
-      return <String, dynamic>{};
-    }
-  }).where((m) => m.isNotEmpty).toList();
+  return entries
+      .map((e) {
+        try {
+          final data = CryptoService.instance.decryptVaultItem(
+            encryptedData: e.encryptedData,
+            dataIV: e.dataIV,
+            encryptedItemKey: e.encryptedItemKey,
+            itemKeyIV: e.itemKeyIV,
+            kek: kek,
+          );
+          return {
+            'id': e.id,
+            'uuid': e.uuid,
+            'type': e.documentType,
+            'data': data,
+            'createdAt': e.createdAt,
+            'updatedAt': e.updatedAt,
+          };
+        } catch (_) {
+          return <String, dynamic>{};
+        }
+      })
+      .where((m) => m.isNotEmpty)
+      .toList();
 });
 
 Future<void> saveDocument({
@@ -118,7 +122,8 @@ Future<void> saveDocument({
     ..updatedAt = now;
 
   if (existingId != null) {
-    final existing = await IsarService.instance.getAllDocuments()
+    final existing = await IsarService.instance
+        .getAllDocuments()
         .then((l) => l.firstWhere((e) => e.id == existingId));
     entry
       ..id = existingId
@@ -147,26 +152,29 @@ final notesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final kek = KeyManager.instance.currentKEK;
   if (kek == null) return [];
   final entries = await IsarService.instance.getAllNotes();
-  return entries.map((e) {
-    try {
-      final data = CryptoService.instance.decryptVaultItem(
-        encryptedData: e.encryptedData,
-        dataIV: e.dataIV,
-        encryptedItemKey: e.encryptedItemKey,
-        itemKeyIV: e.itemKeyIV,
-        kek: kek,
-      );
-      return {
-        'id': e.id,
-        'uuid': e.uuid,
-        'data': data,
-        'createdAt': e.createdAt,
-        'updatedAt': e.updatedAt,
-      };
-    } catch (_) {
-      return <String, dynamic>{};
-    }
-  }).where((m) => m.isNotEmpty).toList();
+  return entries
+      .map((e) {
+        try {
+          final data = CryptoService.instance.decryptVaultItem(
+            encryptedData: e.encryptedData,
+            dataIV: e.dataIV,
+            encryptedItemKey: e.encryptedItemKey,
+            itemKeyIV: e.itemKeyIV,
+            kek: kek,
+          );
+          return {
+            'id': e.id,
+            'uuid': e.uuid,
+            'data': data,
+            'createdAt': e.createdAt,
+            'updatedAt': e.updatedAt,
+          };
+        } catch (_) {
+          return <String, dynamic>{};
+        }
+      })
+      .where((m) => m.isNotEmpty)
+      .toList();
 });
 
 Future<void> saveNote({
@@ -188,7 +196,8 @@ Future<void> saveNote({
     ..updatedAt = now;
 
   if (existingId != null) {
-    final existing = await IsarService.instance.getAllNotes()
+    final existing = await IsarService.instance
+        .getAllNotes()
         .then((l) => l.firstWhere((e) => e.id == existingId));
     entry
       ..id = existingId
@@ -201,30 +210,34 @@ Future<void> saveNote({
 
 // ── Passwords ────────────────────────────────────────────────────────────────
 
-final passwordsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final passwordsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final kek = KeyManager.instance.currentKEK;
   if (kek == null) return [];
   final entries = await IsarService.instance.getAllPasswords();
-  return entries.map((e) {
-    try {
-      final data = CryptoService.instance.decryptVaultItem(
-        encryptedData: e.encryptedData,
-        dataIV: e.dataIV,
-        encryptedItemKey: e.encryptedItemKey,
-        itemKeyIV: e.itemKeyIV,
-        kek: kek,
-      );
-      return {
-        'id': e.id,
-        'uuid': e.uuid,
-        'data': data,
-        'createdAt': e.createdAt,
-        'updatedAt': e.updatedAt,
-      };
-    } catch (_) {
-      return <String, dynamic>{};
-    }
-  }).where((m) => m.isNotEmpty).toList();
+  return entries
+      .map((e) {
+        try {
+          final data = CryptoService.instance.decryptVaultItem(
+            encryptedData: e.encryptedData,
+            dataIV: e.dataIV,
+            encryptedItemKey: e.encryptedItemKey,
+            itemKeyIV: e.itemKeyIV,
+            kek: kek,
+          );
+          return {
+            'id': e.id,
+            'uuid': e.uuid,
+            'data': data,
+            'createdAt': e.createdAt,
+            'updatedAt': e.updatedAt,
+          };
+        } catch (_) {
+          return <String, dynamic>{};
+        }
+      })
+      .where((m) => m.isNotEmpty)
+      .toList();
 });
 
 Future<void> savePassword({
@@ -246,7 +259,8 @@ Future<void> savePassword({
     ..updatedAt = now;
 
   if (existingId != null) {
-    final existing = await IsarService.instance.getAllPasswords()
+    final existing = await IsarService.instance
+        .getAllPasswords()
         .then((l) => l.firstWhere((e) => e.id == existingId));
     entry
       ..id = existingId
@@ -263,26 +277,29 @@ final pagesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final kek = KeyManager.instance.currentKEK;
   if (kek == null) return [];
   final entries = await IsarService.instance.getAllPages();
-  return entries.map((e) {
-    try {
-      final data = CryptoService.instance.decryptVaultItem(
-        encryptedData: e.encryptedData,
-        dataIV: e.dataIV,
-        encryptedItemKey: e.encryptedItemKey,
-        itemKeyIV: e.itemKeyIV,
-        kek: kek,
-      );
-      return {
-        'id': e.id,
-        'uuid': e.uuid,
-        'data': data,
-        'createdAt': e.createdAt,
-        'updatedAt': e.updatedAt,
-      };
-    } catch (_) {
-      return <String, dynamic>{};
-    }
-  }).where((m) => m.isNotEmpty).toList();
+  return entries
+      .map((e) {
+        try {
+          final data = CryptoService.instance.decryptVaultItem(
+            encryptedData: e.encryptedData,
+            dataIV: e.dataIV,
+            encryptedItemKey: e.encryptedItemKey,
+            itemKeyIV: e.itemKeyIV,
+            kek: kek,
+          );
+          return {
+            'id': e.id,
+            'uuid': e.uuid,
+            'data': data,
+            'createdAt': e.createdAt,
+            'updatedAt': e.updatedAt,
+          };
+        } catch (_) {
+          return <String, dynamic>{};
+        }
+      })
+      .where((m) => m.isNotEmpty)
+      .toList();
 });
 
 Future<void> savePage({
@@ -304,7 +321,8 @@ Future<void> savePage({
     ..updatedAt = now;
 
   if (existingId != null) {
-    final existing = await IsarService.instance.getAllPages()
+    final existing = await IsarService.instance
+        .getAllPages()
         .then((l) => l.firstWhere((e) => e.id == existingId));
     entry
       ..id = existingId
@@ -363,7 +381,8 @@ class VaultItemSummary {
   });
 }
 
-final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async {
+final allVaultItemsProvider =
+    FutureProvider<List<VaultItemSummary>>((ref) async {
   final kek = KeyManager.instance.currentKEK;
   if (kek == null) return [];
 
@@ -379,7 +398,9 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
     final docType = item['type'] as String? ?? '';
     final id = item['id'] as int;
     final uuid = item['uuid'] as String? ?? '';
-    final updatedAt = (item['updatedAt'] as DateTime?) ?? (item['createdAt'] as DateTime?) ?? DateTime.now();
+    final updatedAt = (item['updatedAt'] as DateTime?) ??
+        (item['createdAt'] as DateTime?) ??
+        DateTime.now();
     final createdAt = (item['createdAt'] as DateTime?) ?? updatedAt;
 
     String title = 'Document';
@@ -394,15 +415,21 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
         icon = Icons.credit_card_outlined;
         break;
       case AppConstants.docDebitCard:
-        title = (data['bankName'] as String?)?.isNotEmpty == true ? '${data['bankName']} Debit' : 'Debit Card';
+        title = (data['bankName'] as String?)?.isNotEmpty == true
+            ? '${data['bankName']} Debit'
+            : 'Debit Card';
         icon = Icons.payment_outlined;
         break;
       case AppConstants.docCreditCard:
-        title = (data['bankName'] as String?)?.isNotEmpty == true ? '${data['bankName']} Credit' : 'Credit Card';
+        title = (data['bankName'] as String?)?.isNotEmpty == true
+            ? '${data['bankName']} Credit'
+            : 'Credit Card';
         icon = Icons.payment_outlined;
         break;
       default:
-        title = (data['title'] as String?)?.isNotEmpty == true ? data['title'] : 'Document';
+        title = (data['title'] as String?)?.isNotEmpty == true
+            ? data['title']
+            : 'Document';
         icon = Icons.folder_outlined;
     }
 
@@ -429,12 +456,15 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
     final data = (item['data'] as Map<String, dynamic>?) ?? {};
     final id = item['id'] as int;
     final uuid = item['uuid'] as String? ?? '';
-    final updatedAt = (item['updatedAt'] as DateTime?) ?? (item['createdAt'] as DateTime?) ?? DateTime.now();
+    final updatedAt = (item['updatedAt'] as DateTime?) ??
+        (item['createdAt'] as DateTime?) ??
+        DateTime.now();
     final createdAt = (item['createdAt'] as DateTime?) ?? updatedAt;
 
     final rawTitle = (data['title'] as String?)?.trim() ?? '';
     final title = rawTitle.isNotEmpty ? rawTitle : 'Untitled Note';
-    final content = (data['content'] as String? ?? data['text'] as String? ?? '').trim();
+    final content =
+        (data['content'] as String? ?? data['text'] as String? ?? '').trim();
     String subtitle = '';
     if (content.isNotEmpty) {
       final clean = content.replaceAll(RegExp(r'[\r\n]+'), ' ').trim();
@@ -458,7 +488,9 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
     final data = (item['data'] as Map<String, dynamic>?) ?? {};
     final id = item['id'] as int;
     final uuid = item['uuid'] as String? ?? '';
-    final updatedAt = (item['updatedAt'] as DateTime?) ?? (item['createdAt'] as DateTime?) ?? DateTime.now();
+    final updatedAt = (item['updatedAt'] as DateTime?) ??
+        (item['createdAt'] as DateTime?) ??
+        DateTime.now();
     final createdAt = (item['createdAt'] as DateTime?) ?? updatedAt;
 
     final siteName = (data['siteName'] as String?)?.trim() ?? '';
@@ -472,7 +504,8 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
             : url.isNotEmpty
                 ? url
                 : 'Password';
-    final subtitle = (data['username'] as String?) ?? (data['email'] as String?) ?? '';
+    final subtitle =
+        (data['username'] as String?) ?? (data['email'] as String?) ?? '';
 
     items.add(VaultItemSummary(
       id: id,
@@ -491,7 +524,9 @@ final allVaultItemsProvider = FutureProvider<List<VaultItemSummary>>((ref) async
     final data = (item['data'] as Map<String, dynamic>?) ?? {};
     final id = item['id'] as int;
     final uuid = item['uuid'] as String? ?? '';
-    final updatedAt = (item['updatedAt'] as DateTime?) ?? (item['createdAt'] as DateTime?) ?? DateTime.now();
+    final updatedAt = (item['updatedAt'] as DateTime?) ??
+        (item['createdAt'] as DateTime?) ??
+        DateTime.now();
     final createdAt = (item['createdAt'] as DateTime?) ?? updatedAt;
 
     final rawTitle = (data['title'] as String?)?.trim() ?? '';
