@@ -75,7 +75,7 @@ class _DetailSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.palette.border),
       ),
       child: Column(

@@ -26,57 +26,62 @@ class VaultCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.10),
-                context.palette.surface,
-              ],
-            ),
+            color: context.palette.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
+            border: Border.all(color: context.palette.border, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
+                      color: color.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(13),
                     ),
                     child: Icon(icon, color: color, size: 22),
                   ),
-                  const Spacer(),
-                  Icon(Icons.arrow_outward_rounded,
-                      color: context.palette.textSecondary, size: 18),
+                  Icon(
+                    Icons.arrow_outward_rounded,
+                    color: context.palette.textSecondary.withValues(alpha: 0.6),
+                    size: 18,
+                  ),
                 ],
               ),
               const Spacer(),
               Text(
                 '$count',
                 style: TextStyle(
-                  color: color,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  height: 1,
+                  color: context.palette.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  height: 1.1,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 title,
                 style: TextStyle(
                   color: context.palette.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 count == 1 ? '1 item' : '$count items',
                 style: TextStyle(

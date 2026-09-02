@@ -81,12 +81,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     'CipherBox',
                     style: TextStyle(
                       color: context.palette.textPrimary,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.6,
                     ),
                   ),
                   background: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 56, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(20, 54, 20, 0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -94,22 +95,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color:
-                                context.palette.success.withValues(alpha: 0.12),
+                            color: context.palette.surfaceLight,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: context.palette.success
-                                    .withValues(alpha: 0.3)),
+                              color: context.palette.border,
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 6,
-                                height: 6,
+                                width: 7,
+                                height: 7,
                                 decoration: BoxDecoration(
                                   color: context.palette.success,
                                   shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: context.palette.success
+                                          .withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -119,6 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   color: context.palette.success,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.2,
                                 ),
                               ),
                             ],
@@ -207,10 +217,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _showAddMenu(context),
-          icon: const Icon(Icons.add),
-          label: const Text('New'),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: const Text(
+            'New',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.2),
+          ),
           backgroundColor: context.palette.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          elevation: 3,
         ),
       ),
     );
@@ -310,20 +324,23 @@ class _AddMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Container(
-        width: 36,
-        height: 36,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
+          color: color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: color, size: 18),
+        child: Icon(icon, color: color, size: 20),
       ),
       title: Text(label,
           style: TextStyle(
-              color: context.palette.textPrimary, fontWeight: FontWeight.w500)),
-      trailing: Icon(Icons.chevron_right,
-          color: context.palette.textSecondary, size: 18),
+              color: context.palette.textPrimary,
+              fontWeight: FontWeight.w600,
+              fontSize: 15)),
+      trailing: Icon(Icons.chevron_right_rounded,
+          color: context.palette.textSecondary.withValues(alpha: 0.7), size: 20),
       onTap: onTap,
     );
   }

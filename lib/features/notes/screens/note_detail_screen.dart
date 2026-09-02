@@ -97,7 +97,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   isLink ? Icons.link_rounded : Icons.sticky_note_2_outlined,
                   color: isLink
                       ? context.palette.primary
-                      : const Color(0xFFFF9800),
+                      : context.palette.accentNotes,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -111,10 +111,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             const SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: context.palette.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: context.palette.border),
               ),
               child: SelectableText(

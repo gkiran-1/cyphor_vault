@@ -67,7 +67,7 @@ class BackupSettingsScreen extends ConsumerWidget {
             ),
             Divider(color: context.palette.border, height: 1),
             ListTile(
-              leading: Icon(Icons.restore_page_outlined, color: const Color(0xFFFF9800)),
+              leading: Icon(Icons.restore_page_outlined, color: context.palette.warning),
               title: Text('Restore Vault (Reset & Replace)',
                   style: TextStyle(color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
               subtitle: Text('Erase all current data and restore completely from a backup file',
@@ -357,7 +357,7 @@ class _StatusCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.palette.border),
       ),
       child: Row(
@@ -385,7 +385,7 @@ class _Card extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.palette.border),
       ),
       child: Column(children: children),

@@ -122,7 +122,7 @@ class _PasswordTile extends StatelessWidget {
       child: Card(
         child: InkWell(
           onTap: () => context.push(AppRoutes.passwordDetail, extra: {'id': id, 'data': data}),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
@@ -131,11 +131,11 @@ class _PasswordTile extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: context.palette.surfaceLight,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: context.palette.border),
+                    color: context.palette.accentPasswords.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(11),
                   ),
-                  child: Icon(Icons.language_outlined, color: context.palette.primary, size: 20),
+                  child: Icon(Icons.language_outlined,
+                      color: context.palette.accentPasswords, size: 20),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -144,18 +144,28 @@ class _PasswordTile extends StatelessWidget {
                     children: [
                       Text(siteName,
                           style: TextStyle(
-                              color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
-                      if (username.isNotEmpty)
+                              color: context.palette.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
+                      if (username.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(username,
                             style: TextStyle(
                                 color: context.palette.textSecondary, fontSize: 13)),
+                      ],
                     ],
                   ),
                 ),
-                Text('••••••••', style: TextStyle(color: context.palette.textSecondary, fontSize: 13)),
-                const SizedBox(width: 8),
+                Text('••••••••',
+                    style: TextStyle(
+                        color: context.palette.textSecondary.withValues(alpha: 0.7),
+                        fontSize: 13,
+                        letterSpacing: 1.5)),
+                const SizedBox(width: 6),
                 IconButton(
-                  icon: Icon(Icons.copy_outlined, size: 18, color: context.palette.textSecondary),
+                  icon: Icon(Icons.copy_rounded,
+                      size: 18,
+                      color: context.palette.textSecondary.withValues(alpha: 0.7)),
                   onPressed: () => _copyPassword(context),
                   tooltip: 'Copy password',
                 ),

@@ -27,11 +27,9 @@ class BackupStatusBanner extends ConsumerWidget {
 
         if (daysSince < 3) return const SizedBox.shrink();
 
-        final color = daysSince < 7
+        final color = daysSince < 10
             ? context.palette.warning
-            : daysSince < 14
-                ? const Color(0xFFFF6D00)
-                : context.palette.error;
+            : context.palette.error;
 
         return _Banner(
           color: color,
@@ -65,18 +63,25 @@ class _Banner extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
             Icon(icon, color: color, size: 18),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(message, style: TextStyle(color: color, fontSize: 13)),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),

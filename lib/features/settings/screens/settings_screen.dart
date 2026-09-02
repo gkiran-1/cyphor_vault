@@ -30,11 +30,7 @@ class SettingsScreen extends ConsumerWidget {
           const _AppearanceSection(),
           _SectionCard(
             delay: 80,
-            header: _SectionHeader(
-              label: 'ACCOUNT',
-              icon: Icons.person_outline,
-              color: context.palette.primary,
-            ),
+            header: const _SectionHeader(label: 'ACCOUNT'),
             tiles: [
               _SettingsTile(
                 icon: Icons.lock_reset_outlined,
@@ -47,15 +43,11 @@ class SettingsScreen extends ConsumerWidget {
           ),
           _SectionCard(
             delay: 80,
-            header: const _SectionHeader(
-              label: 'SECURITY',
-              icon: Icons.shield_outlined,
-              color: Color(0xFFFF9800),
-            ),
+            header: const _SectionHeader(label: 'SECURITY'),
             tiles: [
               _SettingsTile(
                 icon: Icons.fingerprint,
-                iconColor: const Color(0xFFFF9800),
+                iconColor: context.palette.warning,
                 title: 'Biometric & PIN',
                 subtitle: 'Manage biometric authentication',
                 onTap: () => context.push(AppRoutes.securitySettings),
@@ -64,11 +56,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           _SectionCard(
             delay: 160,
-            header: _SectionHeader(
-              label: 'BACKUP & RESTORE',
-              icon: Icons.shield_outlined,
-              color: context.palette.success,
-            ),
+            header: const _SectionHeader(label: 'BACKUP & RESTORE'),
             tiles: [
               _SettingsTile(
                 icon: Icons.backup_outlined,
@@ -82,11 +70,7 @@ class SettingsScreen extends ConsumerWidget {
           _SectionCard(
             delay: 240,
             isDanger: true,
-            header: _SectionHeader(
-              label: 'DANGER ZONE',
-              icon: Icons.warning_amber_outlined,
-              color: context.palette.error,
-            ),
+            header: const _SectionHeader(label: 'DANGER ZONE'),
             tiles: [
               _SettingsTile(
                 icon: Icons.delete_forever_outlined,
@@ -147,27 +131,21 @@ class _AppearanceSection extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Row(
-              children: [
-                Icon(Icons.palette_outlined, color: p.primary, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'APPEARANCE',
-                  style: TextStyle(
-                    color: p.primary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
+            child: Text(
+              'APPEARANCE',
+              style: TextStyle(
+                color: p.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: p.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: p.border, width: 1),
             ),
             child: SegmentedButton<ThemeMode>(
@@ -175,17 +153,17 @@ class _AppearanceSection extends ConsumerWidget {
                 ButtonSegment(
                   value: ThemeMode.system,
                   label: Text('System'),
-                  icon: Icon(Icons.brightness_auto_outlined),
+                  icon: Icon(Icons.brightness_auto_outlined, size: 18),
                 ),
                 ButtonSegment(
                   value: ThemeMode.light,
                   label: Text('Light'),
-                  icon: Icon(Icons.light_mode_outlined),
+                  icon: Icon(Icons.light_mode_outlined, size: 18),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
                   label: Text('Dark'),
-                  icon: Icon(Icons.dark_mode_outlined),
+                  icon: Icon(Icons.dark_mode_outlined, size: 18),
                 ),
               ],
               selected: {mode},
@@ -205,14 +183,8 @@ class _AppearanceSection extends ConsumerWidget {
 
 class _SectionHeader {
   final String label;
-  final IconData icon;
-  final Color color;
 
-  const _SectionHeader({
-    required this.label,
-    required this.icon,
-    required this.color,
-  });
+  const _SectionHeader({required this.label});
 }
 
 class _SectionCard extends StatelessWidget {
@@ -237,29 +209,25 @@ class _SectionCard extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 8),
-            child: Row(
-              children: [
-                Icon(header.icon, color: header.color, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  header.label,
-                  style: TextStyle(
-                    color: header.color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-              ],
+            child: Text(
+              header.label,
+              style: TextStyle(
+                color: isDanger
+                    ? context.palette.error.withValues(alpha: 0.9)
+                    : context.palette.textSecondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
           Container(
             decoration: BoxDecoration(
               color: context.palette.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isDanger
-                    ? context.palette.error.withValues(alpha: 0.3)
+                    ? context.palette.error.withValues(alpha: 0.25)
                     : context.palette.border,
                 width: 1,
               ),
@@ -269,7 +237,12 @@ class _SectionCard extends StatelessWidget {
                 for (var i = 0; i < tiles.length; i++) ...[
                   tiles[i],
                   if (i < tiles.length - 1)
-                    const Divider(height: 1, indent: 56, endIndent: 16),
+                    Divider(
+                      height: 1,
+                      indent: 64,
+                      endIndent: 16,
+                      color: context.palette.border,
+                    ),
                 ],
               ],
             ),
@@ -303,34 +276,34 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: Container(
-        width: 36,
-        height: 36,
+        width: 40,
+        height: 40,
         decoration: BoxDecoration(
-          color: iconColor.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(9),
+          color: iconColor.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(11),
         ),
-        child: Icon(icon, color: iconColor, size: 18),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
       title: Text(
         title,
         style: TextStyle(
           color: titleColor ?? context.palette.textPrimary,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           fontSize: 15,
         ),
       ),
       subtitle: subtitle != null
           ? Text(subtitle!,
               style: TextStyle(
-                  color: context.palette.textSecondary, fontSize: 12))
+                  color: context.palette.textSecondary, fontSize: 13))
           : null,
       trailing: onTap != null
-          ? Icon(Icons.chevron_right,
-              color: context.palette.textSecondary, size: 18)
+          ? Icon(Icons.chevron_right_rounded,
+              color: context.palette.textSecondary.withValues(alpha: 0.6), size: 20)
           : null,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       onTap: onTap,
     );
   }
