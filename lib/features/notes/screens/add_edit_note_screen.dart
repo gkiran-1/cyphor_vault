@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/database/isar_service.dart';
 import '../../../core/providers/vault_providers.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/theme/app_palette.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
 
 class AddEditNoteScreen extends ConsumerStatefulWidget {
   final int? existingId;
@@ -31,6 +33,30 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
     _titleCtrl.dispose();
     _contentCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _delete() async {
+    if (widget.existingId == null) return;
+    final title =
+        _titleCtrl.text.trim().isEmpty ? 'Note' : _titleCtrl.text.trim();
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Delete Note',
+      message: 'Delete "$title"? This cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+    );
+    if (confirm && mounted) {
+      await IsarService.instance.deleteNote(widget.existingId!);
+      ref.invalidate(notesProvider);
+      ref.invalidate(vaultCountsProvider);
+      if (mounted) {
+        context.pop();
+        if (context.canPop()) {
+          context.pop();
+        }
+      }
+    }
   }
 
   Future<void> _save() async {
@@ -68,6 +94,14 @@ class _AddEditNoteScreenState extends ConsumerState<AddEditNoteScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          if (isEdit)
+            IconButton(
+              icon: Icon(Icons.delete_outline, color: context.palette.error),
+              tooltip: 'Delete',
+              onPressed: _delete,
+            ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

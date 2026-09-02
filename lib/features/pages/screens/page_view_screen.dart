@@ -1,100 +1,80 @@
-import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/database/isar_service.dart';
+import '../../../core/providers/vault_providers.dart';
 import '../../../router/app_router.dart';
 import '../../../shared/theme/app_palette.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
 import '../models/page_document.dart';
 
-class PageViewScreen extends StatefulWidget {
+class PageViewScreen extends ConsumerStatefulWidget {
   final int id;
   final Map<String, dynamic> data;
 
   const PageViewScreen({super.key, required this.id, required this.data});
 
   @override
-  State<PageViewScreen> createState() => _PageViewScreenState();
+  ConsumerState<PageViewScreen> createState() => _PageViewScreenState();
 }
 
-class _PageViewScreenState extends State<PageViewScreen> {
-  late final EditorState _editorState;
-  late final EditorScrollController _scrollController;
+class _PageViewScreenState extends ConsumerState<PageViewScreen> {
+  late QuillController _controller;
+  late final FocusNode _focusNode;
+  late final ScrollController _scrollController;
+  late Map<String, dynamic> _currentData;
 
   @override
   void initState() {
     super.initState();
-    final pageDoc = PageDocument.fromJson(widget.data);
-    _editorState = EditorState(
-      document: Document.fromJson(pageDoc.document),
-    );
-    _scrollController = EditorScrollController(
-      editorState: _editorState,
-      shrinkWrap: false,
+    _currentData = widget.data;
+    _focusNode = FocusNode();
+    _scrollController = ScrollController();
+    final pageDoc = PageDocument.fromJson(_currentData);
+    _controller = QuillController(
+      document: pageDoc.toQuillDocument(),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
     );
   }
 
   @override
   void dispose() {
-    _editorState.dispose();
+    _controller.dispose();
+    _focusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  EditorStyle _buildEditorStyle() {
-    return EditorStyle.mobile(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      cursorColor: context.palette.primary,
-      dragHandleColor: context.palette.primary,
-      selectionColor: context.palette.primary.withValues(alpha: 0.25),
-      textStyleConfiguration: TextStyleConfiguration(
-        text: TextStyle(
-          color: context.palette.textPrimary,
-          fontSize: 16,
-          height: 1.6,
-        ),
-        bold: const TextStyle(fontWeight: FontWeight.w700),
-        italic: const TextStyle(fontStyle: FontStyle.italic),
-        underline: const TextStyle(decoration: TextDecoration.underline),
-        strikethrough: const TextStyle(decoration: TextDecoration.lineThrough),
-        code: TextStyle(
-          fontFamily: 'monospace',
-          fontSize: 14,
-          color: context.palette.success,
-          backgroundColor: context.palette.surfaceLight,
-        ),
-        href: TextStyle(color: context.palette.primary),
-      ),
-    );
-  }
-
-  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders() {
-    return {
-      ...standardBlockComponentBuilderMap,
-      HeadingBlockKeys.type: HeadingBlockComponentBuilder(
-        textStyleBuilder: (level) {
-          final sizes = [28.0, 22.0, 18.0];
-          return TextStyle(
-            color: context.palette.textPrimary,
-            fontSize: sizes.elementAtOrNull(level - 1) ?? 16.0,
-            fontWeight: FontWeight.w700,
-            height: 1.4,
-          );
-        },
-      ),
-      QuoteBlockKeys.type: QuoteBlockComponentBuilder(
-        configuration: BlockComponentConfiguration(
-          textStyle: (node, {textSpan}) => TextStyle(
-            color: context.palette.textSecondary,
-            fontSize: 15,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ),
-    };
+  void _applyNewData(Map<String, dynamic> newData) {
+    _currentData = newData;
+    final pageDoc = PageDocument.fromJson(newData);
+    _controller.document = pageDoc.toQuillDocument();
   }
 
   @override
   Widget build(BuildContext context) {
-    final pageDoc = PageDocument.fromJson(widget.data);
+    // Watch pagesProvider to reactively reflect any edits immediately.
+    final pagesAsync = ref.watch(pagesProvider);
+    final freshItem = pagesAsync.asData?.value
+        .cast<Map<String, dynamic>?>()
+        .firstWhere((e) => e?['id'] == widget.id, orElse: () => null);
+
+    if (freshItem != null && freshItem['data'] is Map<String, dynamic>) {
+      final freshData = freshItem['data'] as Map<String, dynamic>;
+      if (_currentData != freshData) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _applyNewData(freshData);
+            });
+          }
+        });
+      }
+    }
+
+    final pageDoc = PageDocument.fromJson(_currentData);
     final title = pageDoc.title;
     final emoji = pageDoc.coverEmoji;
 
@@ -125,21 +105,43 @@ class _PageViewScreenState extends State<PageViewScreen> {
           IconButton(
             icon: Icon(Icons.edit_outlined, color: context.palette.primary),
             tooltip: 'Edit',
-            onPressed: () => context.push(
-              AppRoutes.editPage,
-              extra: {'id': widget.id, 'data': widget.data},
-            ),
+            onPressed: () async {
+              await context.push(
+                AppRoutes.editPage,
+                extra: {'id': widget.id, 'data': _currentData},
+              );
+              ref.invalidate(pagesProvider);
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete_outline, color: context.palette.error),
+            tooltip: 'Delete',
+            onPressed: () async {
+              final confirm = await showConfirmDialog(
+                context,
+                title: 'Delete Page',
+                message: 'Delete "$title"? This cannot be undone.',
+                confirmText: 'Delete',
+                destructive: true,
+              );
+              if (confirm && context.mounted) {
+                await IsarService.instance.deletePage(widget.id);
+                ref.invalidate(pagesProvider);
+                ref.invalidate(vaultCountsProvider);
+                if (context.mounted) context.pop();
+              }
+            },
           ),
         ],
       ),
       body: SafeArea(
-        child: AppFlowyEditor(
-          editorState: _editorState,
-          editorScrollController: _scrollController,
-          editorStyle: _buildEditorStyle(),
-          blockComponentBuilders: _buildBlockComponentBuilders(),
-          editable: false,
-          footer: const SizedBox(height: 80),
+        child: QuillEditor.basic(
+          controller: _controller,
+          focusNode: _focusNode,
+          scrollController: _scrollController,
+          config: const QuillEditorConfig(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          ),
         ),
       ),
     );
