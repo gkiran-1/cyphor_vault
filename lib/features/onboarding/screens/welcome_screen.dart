@@ -11,7 +11,7 @@ class WelcomeScreen extends StatelessWidget {
     (icon: Icons.folder_outlined, text: 'Store documents, cards & IDs'),
     (icon: Icons.key_outlined, text: 'Manage passwords securely'),
     (icon: Icons.note_outlined, text: 'Keep private notes & links'),
-    (icon: Icons.cloud_outlined, text: 'Encrypted Google Drive backup'),
+    (icon: Icons.cloud_outlined, text: 'Encrypted backup & restore'),
   ];
 
   @override
@@ -19,14 +19,15 @@ class WelcomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.palette.background,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
           child: Column(
             children: [
-              const Spacer(),
+              const SizedBox(height: 16),
               // Logo — entrance scale + persistent subtle pulse
               const _PulseLogo(),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Text(
                 'CipherBox',
                 style: TextStyle(
@@ -42,7 +43,7 @@ class WelcomeScreen extends StatelessWidget {
                     color: context.palette.textSecondary, fontSize: 15, height: 1.5),
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 350.ms),
-              const SizedBox(height: 48),
+              const SizedBox(height: 32),
               for (var i = 0; i < _features.length; i++) ...[
                 _FeatureRow(
                   icon: _features[i].icon,
@@ -51,14 +52,33 @@ class WelcomeScreen extends StatelessWidget {
                     .animate(delay: (400 + i * 120).ms)
                     .fadeIn(duration: 300.ms)
                     .slideX(begin: -0.1, duration: 300.ms, curve: Curves.easeOut),
-                if (i < _features.length - 1) const SizedBox(height: 16),
+                if (i < _features.length - 1) const SizedBox(height: 14),
               ],
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => context.go(AppRoutes.setupPin),
-                child: const Text('Get Started'),
+              const SizedBox(height: 36),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => context.go(AppRoutes.setupPin),
+                  child: const Text('Get Started'),
+                ),
               ).animate().fadeIn(delay: 900.ms).slideY(begin: 0.2),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(AppRoutes.restoreBackup),
+                  icon: const Icon(Icons.restore_outlined, size: 18),
+                  label: const Text('Restore from Backup'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: context.palette.textPrimary,
+                    side: BorderSide(color: context.palette.border),
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 1000.ms).slideY(begin: 0.2),
             ],
           ),
         ),
@@ -103,18 +123,18 @@ class _PulseLogoState extends State<_PulseLogo>
     return ScaleTransition(
       scale: _scale,
       child: Container(
-        width: 100,
-        height: 100,
+        width: 90,
+        height: 90,
         decoration: BoxDecoration(
           color: context.palette.primary.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: context.palette.primary.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
         child: Icon(Icons.lock_outline_rounded,
-            color: context.palette.primary, size: 52),
+            color: context.palette.primary, size: 46),
       ),
     )
         .animate()

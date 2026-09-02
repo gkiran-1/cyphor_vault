@@ -1,6 +1,7 @@
 import 'dart:convert';
 import '../database/isar_service.dart';
 import '../database/collections/user_profile.dart';
+import '../encryption/crypto_service.dart';
 import '../encryption/key_derivation.dart';
 import '../encryption/key_manager.dart';
 import '../utils/constants.dart';
@@ -19,17 +20,10 @@ class AuthService {
   /// Create a new vault protected by [pin].
   /// Returns the recovery phrase — must be shown to user exactly once.
   Future<String> createAccount({required String pin}) async {
-    final derive = KeyDerivation.instance;
-
-    // Derive PIN auth hash for verification
-    final pinSalt = KeyDerivation.generateSalt();
-    final pinKey = derive.derivePINKey(pin, pinSalt);
-    final pinHash = base64.encode(pinKey);
-
     final now = DateTime.now();
     final profile = UserProfile()
-      ..pinHash = pinHash
-      ..pinSalt = base64.encode(pinSalt)
+      ..pinHash = ''
+      ..pinSalt = ''
       ..wrappedKEK = ''
       ..kekIV = ''
       ..wrappedKEKByRecovery = ''
@@ -52,14 +46,27 @@ class AuthService {
     return recoveryPhrase;
   }
 
-  /// Verify PIN against stored hash.
+  /// Verify PIN against stored hash or key unwrap.
   Future<bool> verifyPIN(String pin) async {
     final profile = await IsarService.instance.getUserProfile();
     if (profile == null) return false;
+    final pinSalt = await KeyManager.instance.getPinSalt() ??
+        (profile.pinSalt.isNotEmpty ? base64.decode(profile.pinSalt) : null);
+    if (pinSalt == null) return false;
+
     final derive = KeyDerivation.instance;
-    final salt = base64.decode(profile.pinSalt);
-    final key = derive.derivePINKey(pin, salt);
-    return base64.encode(key) == profile.pinHash;
+    final key = derive.derivePINKey(pin, pinSalt);
+    if (profile.pinHash.isNotEmpty) {
+      return base64.encode(key) == profile.pinHash;
+    }
+    try {
+      final crypto = CryptoService.instance;
+      final kekIV = base64.decode(profile.kekIV);
+      crypto.unwrapKey(profile.wrappedKEK, key, kekIV);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<bool> loginWithPIN(String pin) async {

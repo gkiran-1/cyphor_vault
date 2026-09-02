@@ -65,16 +65,16 @@ class SettingsScreen extends ConsumerWidget {
           _SectionCard(
             delay: 160,
             header: _SectionHeader(
-              label: 'BACKUP',
-              icon: Icons.cloud_outlined,
+              label: 'BACKUP & RESTORE',
+              icon: Icons.shield_outlined,
               color: context.palette.success,
             ),
             tiles: [
               _SettingsTile(
-                icon: Icons.cloud_sync_outlined,
+                icon: Icons.backup_outlined,
                 iconColor: context.palette.success,
-                title: 'Google Drive Backup',
-                subtitle: 'Encrypted backup to your Drive',
+                title: 'Vault Backup & Restore',
+                subtitle: 'Export, import & restore encrypted backups',
                 onTap: () => context.push(AppRoutes.backupSettings),
               ),
             ],

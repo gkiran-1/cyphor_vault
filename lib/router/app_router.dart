@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +12,7 @@ import '../features/onboarding/screens/setup_recovery_screen.dart';
 import '../features/onboarding/screens/setup_biometric_screen.dart';
 import '../features/onboarding/screens/setup_backup_screen.dart';
 import '../features/onboarding/screens/setup_complete_screen.dart';
+import '../features/onboarding/screens/restore_backup_screen.dart';
 import '../features/home/screens/home_screen.dart';
 import '../features/passwords/screens/passwords_list_screen.dart';
 import '../features/passwords/screens/add_edit_password_screen.dart';
@@ -37,6 +39,7 @@ class AppRoutes {
   static const setupBiometric = '/setup-biometric';
   static const setupBackup = '/setup-backup';
   static const setupComplete = '/setup-complete';
+  static const restoreBackup = '/restore-backup';
   static const pinEntry = '/pin-entry';
   static const recoveryEntry = '/recovery-entry';
   static const home = '/home';
@@ -100,8 +103,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Debug logging
       debugPrint('Redirect: Current path: $path, AuthStatus: $status');
 
-      final isOnboarding =
-          path.startsWith('/welcome') || path.startsWith('/setup-');
+      final isOnboarding = path.startsWith('/welcome') ||
+          path.startsWith('/setup-') ||
+          path == AppRoutes.restoreBackup;
       final isAuthScreen =
           path == AppRoutes.pinEntry || path == AppRoutes.recoveryEntry;
 
@@ -176,6 +180,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.setupComplete,
         pageBuilder: (_, state) =>
             MaterialPage(key: state.pageKey, child: const SetupCompleteScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.restoreBackup,
+        pageBuilder: (_, state) {
+          final extra = state.extra;
+          File? file;
+          bool isFromSettings = false;
+          bool isMergeMode = false;
+          if (extra is File) {
+            file = extra;
+          } else if (extra is Map<String, dynamic>) {
+            file = extra['file'] as File?;
+            isFromSettings = extra['isFromSettings'] as bool? ?? false;
+            isMergeMode = extra['isMergeMode'] as bool? ?? false;
+          }
+          return MaterialPage(
+            key: state.pageKey,
+            child: RestoreBackupScreen(
+              initialFile: file,
+              isFromSettings: isFromSettings,
+              isMergeMode: isMergeMode,
+            ),
+          );
+        },
       ),
 
       // List screens — platform default transition (supports back gesture)

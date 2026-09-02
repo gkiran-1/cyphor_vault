@@ -15,11 +15,49 @@ class KeyManager {
   Uint8List? _currentKEK;
 
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(),
   );
 
   Uint8List? get currentKEK => _currentKEK;
   bool get isUnlocked => _currentKEK != null;
+
+  /// Sets the active KEK directly (e.g. after restoring from an encrypted backup).
+  void setUnlockedKEK(Uint8List kek) {
+    _currentKEK = kek;
+  }
+
+  /// Saves salts to secure storage.
+  Future<void> saveSalts({
+    required Uint8List pinSalt,
+    required Uint8List recoverySalt,
+  }) async {
+    await _storage.write(
+      key: SecurityConstants.pinSaltKey,
+      value: base64.encode(pinSalt),
+    );
+    await _storage.write(
+      key: SecurityConstants.recoverySaltKey,
+      value: base64.encode(recoverySalt),
+    );
+  }
+
+  /// Retrieves the active PIN salt.
+  Future<Uint8List?> getPinSalt() async {
+    final s = await _storage.read(key: SecurityConstants.pinSaltKey);
+    if (s != null) return base64.decode(s);
+    final profile = await IsarService.instance.getUserProfile();
+    if (profile != null && profile.pinSalt.isNotEmpty) {
+      return base64.decode(profile.pinSalt);
+    }
+    return null;
+  }
+
+  /// Retrieves the active recovery salt.
+  Future<Uint8List?> getRecoverySalt() async {
+    final s = await _storage.read(key: SecurityConstants.recoverySaltKey);
+    if (s != null) return base64.decode(s);
+    return null;
+  }
 
   /// Generates a human-readable recovery phrase (8 groups of 4 chars from safe charset).
   static String generateRecoveryPhrase() {
@@ -71,6 +109,8 @@ class KeyManager {
     );
 
     // Update profile
+    profile.pinSalt = base64.encode(pinSaltBytes);
+    profile.pinHash = base64.encode(pinKey);
     profile.wrappedKEK = wrappedByPIN.ciphertext;
     profile.kekIV = wrappedByPIN.iv;
     profile.wrappedKEKByRecovery = wrappedByRecovery.ciphertext;
@@ -92,7 +132,14 @@ class KeyManager {
     final derive = KeyDerivation.instance;
     final crypto = CryptoService.instance;
 
-    final pinSaltB64 = await _storage.read(key: SecurityConstants.pinSaltKey);
+    var pinSaltB64 = await _storage.read(key: SecurityConstants.pinSaltKey);
+    if (pinSaltB64 == null && profile.pinSalt.isNotEmpty) {
+      pinSaltB64 = profile.pinSalt;
+      await _storage.write(
+        key: SecurityConstants.pinSaltKey,
+        value: pinSaltB64,
+      );
+    }
     if (pinSaltB64 == null) throw StateError('PIN salt not found');
 
     final pinSalt = base64.decode(pinSaltB64);
@@ -149,6 +196,8 @@ class KeyManager {
       value: base64.encode(pinSaltBytes),
     );
 
+    profile.pinSalt = base64.encode(pinSaltBytes);
+    profile.pinHash = base64.encode(pinKey);
     profile.wrappedKEK = wrappedByPIN.ciphertext;
     profile.kekIV = wrappedByPIN.iv;
     profile.updatedAt = DateTime.now();
@@ -180,6 +229,8 @@ class KeyManager {
       value: base64.encode(pinSaltBytes),
     );
 
+    profile.pinSalt = base64.encode(pinSaltBytes);
+    profile.pinHash = base64.encode(pinKey);
     profile.wrappedKEK = wrappedByPIN.ciphertext;
     profile.kekIV = wrappedByPIN.iv;
     profile.updatedAt = DateTime.now();
