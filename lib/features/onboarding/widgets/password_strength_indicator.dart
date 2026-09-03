@@ -11,7 +11,7 @@ class PasswordStrengthIndicator extends StatelessWidget {
       case 0: return context.palette.error;
       case 1: return context.palette.error;
       case 2: return context.palette.warning;
-      case 3: return const Color(0xFF8BC34A);
+      case 3: return context.palette.success.withValues(alpha: 0.85);
       default: return context.palette.success;
     }
   }

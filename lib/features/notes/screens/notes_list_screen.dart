@@ -109,15 +109,24 @@ class _NoteTile extends StatelessWidget {
       child: Card(
         child: InkWell(
           onTap: () => context.push(AppRoutes.noteDetail, extra: {'id': id, 'data': data}),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(
-                  isLink ? Icons.link_rounded : Icons.sticky_note_2_outlined,
-                  color: isLink ? context.palette.primary : const Color(0xFFFF9800),
-                  size: 22,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: (isLink ? context.palette.primary : context.palette.accentNotes)
+                        .withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(
+                    isLink ? Icons.link_rounded : Icons.sticky_note_2_outlined,
+                    color: isLink ? context.palette.primary : context.palette.accentNotes,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -126,16 +135,21 @@ class _NoteTile extends StatelessWidget {
                     children: [
                       Text(title,
                           style: TextStyle(
-                              color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
-                      if (content.isNotEmpty)
+                              color: context.palette.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
+                      if (content.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(
                           content.length > 60 ? '${content.substring(0, 60)}…' : content,
                           style: TextStyle(color: context.palette.textSecondary, fontSize: 13),
                         ),
+                      ],
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: context.palette.textSecondary, size: 18),
+                Icon(Icons.chevron_right_rounded,
+                    color: context.palette.textSecondary.withValues(alpha: 0.6), size: 20),
               ],
             ),
           ),

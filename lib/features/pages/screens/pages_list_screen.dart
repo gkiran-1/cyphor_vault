@@ -109,16 +109,33 @@ class _PageTile extends StatelessWidget {
       child: Card(
         child: InkWell(
           onTap: () => context.push(AppRoutes.pageDetail, extra: {'id': id, 'data': data}),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 if (emoji != null)
-                  Text(emoji, style: const TextStyle(fontSize: 22))
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: context.palette.accentPages.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Text(emoji, style: const TextStyle(fontSize: 20)),
+                  )
                 else
-                  const Icon(Icons.article_outlined,
-                      color: Color(0xFF9C27B0), size: 22),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: context.palette.accentPages.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Icon(Icons.article_outlined,
+                        color: context.palette.accentPages, size: 20),
+                  ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -127,15 +144,17 @@ class _PageTile extends StatelessWidget {
                       Text(title,
                           style: TextStyle(
                               color: context.palette.textPrimary,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
+                      const SizedBox(height: 2),
                       Text('Rich page',
                           style: TextStyle(
                               color: context.palette.textSecondary, fontSize: 13)),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    color: context.palette.textSecondary, size: 18),
+                Icon(Icons.chevron_right_rounded,
+                    color: context.palette.textSecondary.withValues(alpha: 0.6), size: 20),
               ],
             ),
           ),

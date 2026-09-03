@@ -187,7 +187,7 @@ class _Section extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: context.palette.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.palette.border),
       ),
       child: Column(
@@ -288,13 +288,13 @@ class _CardPreview extends StatelessWidget {
     Color bg;
     switch (network) {
       case 'visa':
-        bg = const Color(0xFF1A1F71);
+        bg = context.palette.cardVisa;
         break;
       case 'mastercard':
-        bg = const Color(0xFF1B1B1B);
+        bg = context.palette.cardMastercard;
         break;
       case 'rupay':
-        bg = const Color(0xFF097969);
+        bg = context.palette.cardRupay;
         break;
       default:
         bg = context.palette.surfaceLight;

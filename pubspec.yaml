@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State management
   flutter_riverpod: ^2.5.1
@@ -42,6 +44,9 @@ dependencies:
   # Image picker (camera + gallery)
   image_picker: ^1.1.2
 
+  # File picker (local backup/restore)
+  file_picker: ^8.1.4
+
   # Navigation
   go_router: ^17.3.0
 
@@ -55,7 +60,7 @@ dependencies:
   package_info_plus: ^9.0.1
 
   # Date/number formatting
-  intl: ^0.20.3
+  intl: ^0.20.2
 
   # UUID generation
   uuid: ^4.4.2
@@ -74,7 +79,9 @@ dependencies:
 
   # Cupertino icons
   cupertino_icons: ^1.0.8
-  appflowy_editor: ^6.2.0
+
+  # Rich text editor
+  flutter_quill: ^11.5.1
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +106,3 @@ flutter:
     - assets/images/
     - assets/icons/
 
-dependency_overrides:
-  appflowy_editor:
-    path: ./packages/appflowy_editor

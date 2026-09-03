@@ -1,12 +1,14 @@
 import 'dart:convert';
-import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/database/isar_service.dart';
 import '../../../core/providers/vault_providers.dart';
 import '../../../core/utils/constants.dart';
 import '../../../shared/theme/app_palette.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
 import '../models/page_document.dart';
 
 class PageEditorScreen extends ConsumerStatefulWidget {
@@ -21,104 +23,40 @@ class PageEditorScreen extends ConsumerStatefulWidget {
 
 class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
   late final TextEditingController _titleCtrl;
-  late final EditorState _editorState;
-  late final EditorScrollController _scrollController;
+  late final QuillController _controller;
+  late final FocusNode _focusNode;
+  late final ScrollController _scrollController;
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
+    _scrollController = ScrollController();
+
     if (widget.existingData != null) {
       final pageDoc = PageDocument.fromJson(widget.existingData!);
       _titleCtrl = TextEditingController(text: pageDoc.title);
-      _editorState = EditorState(
-        document: Document.fromJson(pageDoc.document),
+      _controller = QuillController(
+        document: pageDoc.toQuillDocument(),
+        selection: const TextSelection.collapsed(offset: 0),
       );
     } else {
       _titleCtrl = TextEditingController();
-      _editorState = EditorState.blank(withInitialText: true);
+      _controller = QuillController.basic();
     }
-    _scrollController = EditorScrollController(
-      editorState: _editorState,
-      shrinkWrap: false,
-    );
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
-    _editorState.dispose();
+    _controller.dispose();
+    _focusNode.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
-  EditorStyle _buildEditorStyle() {
-    return EditorStyle.mobile(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      cursorColor: context.palette.primary,
-      dragHandleColor: context.palette.primary,
-      selectionColor: context.palette.primary.withValues(alpha: 0.25),
-      textStyleConfiguration: TextStyleConfiguration(
-        text: TextStyle(
-          color: context.palette.textPrimary,
-          fontSize: 16,
-          height: 1.6,
-        ),
-        bold: const TextStyle(fontWeight: FontWeight.w700),
-        italic: const TextStyle(fontStyle: FontStyle.italic),
-        underline: const TextStyle(decoration: TextDecoration.underline),
-        strikethrough: const TextStyle(decoration: TextDecoration.lineThrough),
-        code: TextStyle(
-          fontFamily: 'monospace',
-          fontSize: 14,
-          color: context.palette.success,
-          backgroundColor: context.palette.surfaceLight,
-        ),
-        href: TextStyle(color: context.palette.primary),
-      ),
-    );
-  }
-
-  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders() {
-    return {
-      ...standardBlockComponentBuilderMap,
-      HeadingBlockKeys.type: HeadingBlockComponentBuilder(
-        textStyleBuilder: (level) {
-          final sizes = [28.0, 22.0, 18.0];
-          return TextStyle(
-            color: context.palette.textPrimary,
-            fontSize: sizes.elementAtOrNull(level - 1) ?? 16.0,
-            fontWeight: FontWeight.w700,
-            height: 1.4,
-          );
-        },
-      ),
-      ParagraphBlockKeys.type: ParagraphBlockComponentBuilder(
-        configuration: BlockComponentConfiguration(
-          placeholderText: (node) => "Type '/' for commands…",
-          textStyle: (node, {textSpan}) => TextStyle(
-            color: context.palette.textPrimary,
-            fontSize: 16,
-            height: 1.6,
-          ),
-        ),
-      ),
-      QuoteBlockKeys.type: QuoteBlockComponentBuilder(
-        configuration: BlockComponentConfiguration(
-          textStyle: (node, {textSpan}) => TextStyle(
-            color: context.palette.textSecondary,
-            fontSize: 15,
-            fontStyle: FontStyle.italic,
-          ),
-        ),
-      ),
-    };
-  }
-
   Future<void> _pickAndInsertImage() async {
-    // Save selection before async operations steal editor focus.
-    final savedSelection = _editorState.selection;
-
     final picker = ImagePicker();
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -158,30 +96,47 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     if (bytes.length > SecurityConstants.maxImageSizeBytes) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Image too large (max 5 MB).')),
+          const SnackBar(content: Text('Image too large (max 5 MB).')),
         );
       }
       return;
     }
 
-    // Restore selection so insertImageNode can place the image correctly.
-    // If the saved selection is gone, fall back to the last node in the document.
-    if (_editorState.selection == null) {
-      if (savedSelection != null) {
-        _editorState.selection = savedSelection;
-      } else {
-        final children = _editorState.document.root.children;
-        if (children.isNotEmpty) {
-          _editorState.selection = Selection.collapsed(
-            Position(path: children.last.path, offset: 0),
-          );
+    final b64 = base64Encode(bytes);
+    final imageUrl = 'data:image/png;base64,$b64';
+    final index = _controller.selection.baseOffset;
+    final length = _controller.selection.extentOffset - index;
+    _controller.replaceText(
+      index < 0 ? 0 : index,
+      length < 0 ? 0 : length,
+      BlockEmbed.image(imageUrl),
+      null,
+    );
+  }
+
+  Future<void> _delete() async {
+    if (widget.existingId == null) return;
+    final title =
+        _titleCtrl.text.trim().isEmpty ? 'Untitled' : _titleCtrl.text.trim();
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Delete Page',
+      message: 'Delete "$title"? This cannot be undone.',
+      confirmText: 'Delete',
+      destructive: true,
+    );
+    if (confirm && mounted) {
+      await IsarService.instance.deletePage(widget.existingId!);
+      ref.invalidate(pagesProvider);
+      ref.invalidate(vaultCountsProvider);
+      if (mounted) {
+        context.pop();
+        // If we came from detail screen, pop that too
+        if (context.canPop()) {
+          context.pop();
         }
       }
     }
-
-    final b64 = base64Encode(bytes);
-    await _editorState.insertImageNode(b64);
   }
 
   Future<void> _save() async {
@@ -190,7 +145,7 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
     try {
       final title =
           _titleCtrl.text.trim().isEmpty ? 'Untitled' : _titleCtrl.text.trim();
-      final docJson = _editorState.document.toJson();
+      final docJson = _controller.document.toDelta().toJson();
       final pageDoc = PageDocument(title: title, document: docJson);
       await savePage(data: pageDoc.toJson(), existingId: widget.existingId);
       ref.invalidate(pagesProvider);
@@ -209,20 +164,8 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Defined here to capture [_pickAndInsertImage] from this State.
-    final imageToolbarItem = MobileToolbarItem.action(
-      itemIconBuilder: (ctx, _, __) => Icon(
-        Icons.image_outlined,
-        color: MobileToolbarTheme.of(ctx).iconColor,
-        size: 22,
-      ),
-      actionHandler: (ctx, editorState) => _pickAndInsertImage(),
-    );
-
     return Scaffold(
       backgroundColor: context.palette.background,
-      // IMPORTANT: must be false — MobileToolbarV2 handles keyboard insets itself.
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: context.palette.surface,
         leading: IconButton(
@@ -244,6 +187,12 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
           textCapitalization: TextCapitalization.sentences,
         ),
         actions: [
+          if (widget.existingId != null)
+            IconButton(
+              icon: Icon(Icons.delete_outline, color: context.palette.error),
+              tooltip: 'Delete',
+              onPressed: _delete,
+            ),
           if (_saving)
             Padding(
               padding: const EdgeInsets.all(16),
@@ -258,65 +207,47 @@ class _PageEditorScreenState extends ConsumerState<PageEditorScreen> {
               onPressed: _save,
               child: Text('Save',
                   style: TextStyle(
-                      color: context.palette.primary, fontWeight: FontWeight.w600)),
+                      color: context.palette.primary,
+                      fontWeight: FontWeight.w600)),
             ),
         ],
       ),
-      // No SafeArea here — MobileToolbarV2 manages bottom insets / keyboard.
-      body: MobileToolbarV2(
-        backgroundColor: context.palette.surface,
-        foregroundColor: context.palette.textSecondary,
-        iconColor: context.palette.textPrimary,
-        itemHighlightColor: context.palette.primary,
-        primaryColor: context.palette.primary,
-        onPrimaryColor: context.palette.background,
-        outlineColor: context.palette.border,
-        toolbarItems: [
-          textDecorationMobileToolbarItemV2,
-          buildTextAndBackgroundColorMobileToolbarItem(),
-          blocksMobileToolbarItem,
-          dividerMobileToolbarItem,
-          imageToolbarItem,
-        ],
-        editorState: _editorState,
-        child: Column(
-          children: [
-            Expanded(
-              child: MobileFloatingToolbar(
-                editorState: _editorState,
-                editorScrollController: _scrollController,
-                floatingToolbarHeight: 36,
-                toolbarBuilder: (context, anchor, closeToolbar) {
-                  return AdaptiveTextSelectionToolbar.editable(
-                    clipboardStatus: ClipboardStatus.pasteable,
-                    onCopy: () {
-                      copyCommand.execute(_editorState);
-                      closeToolbar();
-                    },
-                    onCut: () => cutCommand.execute(_editorState),
-                    onPaste: () => pasteCommand.execute(_editorState),
-                    onSelectAll: () => selectAllCommand.execute(_editorState),
-                    onLiveTextInput: null,
-                    onLookUp: null,
-                    onSearchWeb: null,
-                    onShare: null,
-                    anchors:
-                        TextSelectionToolbarAnchors(primaryAnchor: anchor),
-                  );
-                },
-                child: AppFlowyEditor(
-                  editorState: _editorState,
-                  editorScrollController: _scrollController,
-                  editorStyle: _buildEditorStyle(),
-                  blockComponentBuilders: _buildBlockComponentBuilders(),
-                  // Auto-focus on new pages so toolbar is immediately visible.
-                  autoFocus: widget.existingId == null,
-                  footer: const SizedBox(height: 80),
+      body: Column(
+        children: [
+          QuillSimpleToolbar(
+            controller: _controller,
+            config: QuillSimpleToolbarConfig(
+              showFontFamily: false,
+              showFontSize: false,
+              showSearchButton: false,
+              showSubscript: false,
+              showSuperscript: false,
+              showAlignmentButtons: false,
+              showDirection: false,
+              customButtons: [
+                QuillToolbarCustomButtonOptions(
+                  icon: Icon(Icons.image_outlined,
+                      color: context.palette.textPrimary),
+                  tooltip: 'Insert Image',
+                  onPressed: _pickAndInsertImage,
                 ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: QuillEditor.basic(
+              controller: _controller,
+              focusNode: _focusNode,
+              scrollController: _scrollController,
+              config: QuillEditorConfig(
+                placeholder: "Type '/' for commands…",
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                autoFocus: widget.existingId == null,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -142,20 +142,19 @@ class _DocumentTile extends StatelessWidget {
         child: InkWell(
           onTap: () => context.push(AppRoutes.documentDetail,
               extra: {'id': id, 'type': type, 'data': data}),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: context.palette.surfaceLight,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: context.palette.border),
+                    color: context.palette.accentDocuments.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(11),
                   ),
-                  child: Icon(_icon, color: context.palette.primary, size: 22),
+                  child: Icon(_icon, color: context.palette.accentDocuments, size: 20),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -164,15 +163,20 @@ class _DocumentTile extends StatelessWidget {
                     children: [
                       Text(_typeLabel,
                           style: TextStyle(
-                              color: context.palette.textPrimary, fontWeight: FontWeight.w600)),
-                      if (_subtitle.isNotEmpty)
+                              color: context.palette.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15)),
+                      if (_subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(_subtitle,
                             style: TextStyle(
                                 color: context.palette.textSecondary, fontSize: 13)),
+                      ],
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: context.palette.textSecondary, size: 18),
+                Icon(Icons.chevron_right_rounded,
+                    color: context.palette.textSecondary.withValues(alpha: 0.6), size: 20),
               ],
             ),
           ),
