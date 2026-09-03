@@ -211,5 +211,53 @@ void main() {
       // Cleanup
       tempDir.deleteSync(recursive: true);
     });
+
+    test('computeContentHash generates deterministic SHA-256 and detects updates', () {
+      final itemA1 = {
+        'title': 'Original Note',
+        'content': 'Meeting notes content',
+        'category': 'note',
+      };
+      // Same content with keys in different order
+      final itemA2 = {
+        'category': 'note',
+        'title': 'Original Note',
+        'content': 'Meeting notes content',
+      };
+      // Same content with transient metadata
+      final itemA3 = {
+        'title': 'Original Note',
+        'content': 'Meeting notes content',
+        'category': 'note',
+        'updatedAt': '2026-09-03T10:00:00Z',
+        'uuid': 'some-uuid-123',
+        'id': 42,
+      };
+
+      final hashA1 = BackupService.computeContentHash(itemA1);
+      final hashA2 = BackupService.computeContentHash(itemA2);
+      final hashA3 = BackupService.computeContentHash(itemA3);
+
+      expect(hashA1, hashA2, reason: 'Key order should not affect content hash');
+      expect(hashA1, hashA3, reason: 'Transient fields should not affect content hash');
+
+      // Renamed title -> hash must change
+      final itemRenamed = {
+        'title': 'Renamed Note',
+        'content': 'Meeting notes content',
+        'category': 'note',
+      };
+      final hashRenamed = BackupService.computeContentHash(itemRenamed);
+      expect(hashRenamed, isNot(hashA1), reason: 'Renaming title must produce a different hash');
+
+      // Modified body -> hash must change
+      final itemEdited = {
+        'title': 'Original Note',
+        'content': 'Updated meeting notes content',
+        'category': 'note',
+      };
+      final hashEdited = BackupService.computeContentHash(itemEdited);
+      expect(hashEdited, isNot(hashA1), reason: 'Editing content must produce a different hash');
+    });
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../database/collections/backup_log.dart';
@@ -110,6 +111,35 @@ class BackupService {
     }
     return dir;
   }
+
+  /// Computes a deterministic SHA-256 hash of decrypted item data.
+  /// Transient fields (timestamps, internal IDs) are excluded to accurately
+  /// detect whether user-facing content was modified.
+  static String computeContentHash(Map<String, dynamic> data) {
+    final clean = Map<String, dynamic>.from(data)
+      ..remove('updatedAt')
+      ..remove('createdAt')
+      ..remove('id')
+      ..remove('uuid');
+    final canonical = canonicalJson(clean);
+    return sha256.convert(utf8.encode(canonical)).toString();
+  }
+
+  static String canonicalJson(dynamic value) {
+    if (value is Map) {
+      final sortedKeys = value.keys.map((k) => k.toString()).toList()..sort();
+      final entries =
+          sortedKeys.map((k) => '"$k":${canonicalJson(value[k])}');
+      return '{${entries.join(',')}}';
+    } else if (value is List) {
+      return '[${value.map(canonicalJson).join(',')}]';
+    } else {
+      return jsonEncode(value);
+    }
+  }
+
+  String _computeContentHash(Map<String, dynamic> data) =>
+      computeContentHash(data);
 
   /// Creates a single encrypted .cipherbox backup file of all vault data.
   Future<File> createBackupFile() async {
@@ -737,9 +767,10 @@ class BackupService {
     final existingPasswords = await isar.getAllPasswords();
     final existingPages = await isar.getAllPages();
 
-    // Index existing items by UUID and decrypted title/name
+    // Index existing items by UUID, decrypted title/name, and content hash
     final existingDocMap = <String, DocumentEntry>{};
     final existingDocTitleMap = <String, DocumentEntry>{};
+    final existingDocHashMap = <String, String>{};
     for (final doc in existingDocs) {
       existingDocMap[doc.uuid] = doc;
       try {
@@ -752,11 +783,13 @@ class BackupService {
         );
         final title = (d['name'] as String? ?? d['title'] as String? ?? '').trim().toLowerCase();
         if (title.isNotEmpty) existingDocTitleMap[title] = doc;
+        existingDocHashMap[doc.uuid] = _computeContentHash(d);
       } catch (_) {}
     }
 
     final existingNoteMap = <String, NoteEntry>{};
     final existingNoteTitleMap = <String, NoteEntry>{};
+    final existingNoteHashMap = <String, String>{};
     for (final note in existingNotes) {
       existingNoteMap[note.uuid] = note;
       try {
@@ -769,11 +802,13 @@ class BackupService {
         );
         final title = (d['title'] as String? ?? '').trim().toLowerCase();
         if (title.isNotEmpty) existingNoteTitleMap[title] = note;
+        existingNoteHashMap[note.uuid] = _computeContentHash(d);
       } catch (_) {}
     }
 
     final existingPassMap = <String, PasswordEntry>{};
     final existingPassTitleMap = <String, PasswordEntry>{};
+    final existingPassHashMap = <String, String>{};
     for (final pass in existingPasswords) {
       existingPassMap[pass.uuid] = pass;
       try {
@@ -786,11 +821,13 @@ class BackupService {
         );
         final title = (d['title'] as String? ?? d['service'] as String? ?? '').trim().toLowerCase();
         if (title.isNotEmpty) existingPassTitleMap[title] = pass;
+        existingPassHashMap[pass.uuid] = _computeContentHash(d);
       } catch (_) {}
     }
 
     final existingPageMap = <String, PageEntry>{};
     final existingPageTitleMap = <String, PageEntry>{};
+    final existingPageHashMap = <String, String>{};
     for (final page in existingPages) {
       existingPageMap[page.uuid] = page;
       try {
@@ -803,6 +840,7 @@ class BackupService {
         );
         final title = (d['title'] as String? ?? '').trim().toLowerCase();
         if (title.isNotEmpty) existingPageTitleMap[title] = page;
+        existingPageHashMap[page.uuid] = _computeContentHash(d);
       } catch (_) {}
     }
 
@@ -826,17 +864,25 @@ class BackupService {
             kek: backupKek,
           );
 
-          final rawTitle = (data['name'] as String? ?? data['title'] as String? ?? '').trim();
+          final titleKey = data.containsKey('name') ? 'name' : 'title';
+          final rawTitle = (data[titleKey] as String? ?? '').trim();
           final lowerTitle = rawTitle.toLowerCase();
           final incomingUuid = item['uuid'] as String? ?? const Uuid().v4();
+          final incomingHash = _computeContentHash(data);
 
           final existingByUuid = existingDocMap[incomingUuid];
           final existingByTitle = lowerTitle.isNotEmpty ? existingDocTitleMap[lowerTitle] : null;
           final hasConflict = existingByUuid != null || existingByTitle != null;
 
-          if (hasConflict && conflictResolution == ImportConflictResolution.skip) {
-            skippedCount++;
-            continue;
+          final target = existingByUuid ?? existingByTitle;
+          final isExactDuplicate = target != null && existingDocHashMap[target.uuid] == incomingHash;
+
+          if (conflictResolution == ImportConflictResolution.skip) {
+            if (isExactDuplicate) {
+              skippedCount++;
+              continue;
+            }
+            // Option A: If content has been updated, do not skip — import as copy.
           }
 
           // Re-wrap any encrypted images with activeKek
@@ -855,26 +901,26 @@ class BackupService {
           }
 
           if (hasConflict && conflictResolution == ImportConflictResolution.overwrite) {
-            final target = existingByUuid ?? existingByTitle!;
+            final targetEntry = target!;
             final enc = crypto.encryptVaultItem(data, activeKek);
             final entry = DocumentEntry()
-              ..id = target.id
-              ..uuid = target.uuid
-              ..documentType = item['documentType'] as String? ?? target.documentType
+              ..id = targetEntry.id
+              ..uuid = targetEntry.uuid
+              ..documentType = item['documentType'] as String? ?? targetEntry.documentType
               ..encryptedData = enc['encryptedData']!
               ..encryptedItemKey = enc['encryptedItemKey']!
               ..itemKeyIV = enc['itemKeyIV']!
               ..dataIV = enc['dataIV']!
-              ..createdAt = target.createdAt
+              ..createdAt = targetEntry.createdAt
               ..updatedAt = DateTime.now();
 
             await isar.saveDocument(entry);
             updatedCount++;
             importedDocs++;
           } else {
-            // keepBoth or no conflict
-            if (hasConflict && conflictResolution == ImportConflictResolution.keepBoth) {
-              final titleKey = data.containsKey('name') ? 'name' : 'title';
+            // keepBoth or (skip and content changed) or no conflict
+            final titleConflicts = existingByTitle != null || (lowerTitle.isNotEmpty && existingDocTitleMap.containsKey(lowerTitle));
+            if (hasConflict && (conflictResolution == ImportConflictResolution.keepBoth || titleConflicts)) {
               data[titleKey] = rawTitle.isNotEmpty ? '$rawTitle (Imported)' : 'Document (Imported)';
             }
 
@@ -892,6 +938,13 @@ class BackupService {
 
             await isar.saveDocument(entry);
             importedDocs++;
+
+            if (hasConflict) {
+              existingDocMap[newUuid] = entry;
+              final newTitle = (data[titleKey] as String? ?? '').trim().toLowerCase();
+              if (newTitle.isNotEmpty) existingDocTitleMap[newTitle] = entry;
+              existingDocHashMap[newUuid] = _computeContentHash(data);
+            }
           }
         } catch (_) {}
       }
@@ -913,34 +966,43 @@ class BackupService {
           final rawTitle = (data['title'] as String? ?? '').trim();
           final lowerTitle = rawTitle.toLowerCase();
           final incomingUuid = item['uuid'] as String? ?? const Uuid().v4();
+          final incomingHash = _computeContentHash(data);
 
           final existingByUuid = existingNoteMap[incomingUuid];
           final existingByTitle = lowerTitle.isNotEmpty ? existingNoteTitleMap[lowerTitle] : null;
           final hasConflict = existingByUuid != null || existingByTitle != null;
 
-          if (hasConflict && conflictResolution == ImportConflictResolution.skip) {
-            skippedCount++;
-            continue;
+          final target = existingByUuid ?? existingByTitle;
+          final isExactDuplicate = target != null && existingNoteHashMap[target.uuid] == incomingHash;
+
+          if (conflictResolution == ImportConflictResolution.skip) {
+            if (isExactDuplicate) {
+              skippedCount++;
+              continue;
+            }
+            // Option A: If content has been updated, do not skip — import as copy.
           }
 
           if (hasConflict && conflictResolution == ImportConflictResolution.overwrite) {
-            final target = existingByUuid ?? existingByTitle!;
+            final targetEntry = target!;
             final enc = crypto.encryptVaultItem(data, activeKek);
             final entry = NoteEntry()
-              ..id = target.id
-              ..uuid = target.uuid
+              ..id = targetEntry.id
+              ..uuid = targetEntry.uuid
               ..encryptedData = enc['encryptedData']!
               ..encryptedItemKey = enc['encryptedItemKey']!
               ..itemKeyIV = enc['itemKeyIV']!
               ..dataIV = enc['dataIV']!
-              ..createdAt = target.createdAt
+              ..createdAt = targetEntry.createdAt
               ..updatedAt = DateTime.now();
 
             await isar.saveNote(entry);
             updatedCount++;
             importedNotes++;
           } else {
-            if (hasConflict && conflictResolution == ImportConflictResolution.keepBoth) {
+            // keepBoth or (skip and content changed) or no conflict
+            final titleConflicts = existingByTitle != null || (lowerTitle.isNotEmpty && existingNoteTitleMap.containsKey(lowerTitle));
+            if (hasConflict && (conflictResolution == ImportConflictResolution.keepBoth || titleConflicts)) {
               data['title'] = rawTitle.isNotEmpty ? '$rawTitle (Imported)' : 'Untitled (Imported)';
             }
 
@@ -957,6 +1019,13 @@ class BackupService {
 
             await isar.saveNote(entry);
             importedNotes++;
+
+            if (hasConflict) {
+              existingNoteMap[newUuid] = entry;
+              final newTitle = (data['title'] as String? ?? '').trim().toLowerCase();
+              if (newTitle.isNotEmpty) existingNoteTitleMap[newTitle] = entry;
+              existingNoteHashMap[newUuid] = _computeContentHash(data);
+            }
           }
         } catch (_) {}
       }
@@ -975,38 +1044,47 @@ class BackupService {
             kek: backupKek,
           );
 
-          final rawTitle = (data['title'] as String? ?? data['service'] as String? ?? '').trim();
+          final titleKey = data.containsKey('title') ? 'title' : 'service';
+          final rawTitle = (data[titleKey] as String? ?? '').trim();
           final lowerTitle = rawTitle.toLowerCase();
           final incomingUuid = item['uuid'] as String? ?? const Uuid().v4();
+          final incomingHash = _computeContentHash(data);
 
           final existingByUuid = existingPassMap[incomingUuid];
           final existingByTitle = lowerTitle.isNotEmpty ? existingPassTitleMap[lowerTitle] : null;
           final hasConflict = existingByUuid != null || existingByTitle != null;
 
-          if (hasConflict && conflictResolution == ImportConflictResolution.skip) {
-            skippedCount++;
-            continue;
+          final target = existingByUuid ?? existingByTitle;
+          final isExactDuplicate = target != null && existingPassHashMap[target.uuid] == incomingHash;
+
+          if (conflictResolution == ImportConflictResolution.skip) {
+            if (isExactDuplicate) {
+              skippedCount++;
+              continue;
+            }
+            // Option A: If content has been updated, do not skip — import as copy.
           }
 
           if (hasConflict && conflictResolution == ImportConflictResolution.overwrite) {
-            final target = existingByUuid ?? existingByTitle!;
+            final targetEntry = target!;
             final enc = crypto.encryptVaultItem(data, activeKek);
             final entry = PasswordEntry()
-              ..id = target.id
-              ..uuid = target.uuid
+              ..id = targetEntry.id
+              ..uuid = targetEntry.uuid
               ..encryptedData = enc['encryptedData']!
               ..encryptedItemKey = enc['encryptedItemKey']!
               ..itemKeyIV = enc['itemKeyIV']!
               ..dataIV = enc['dataIV']!
-              ..createdAt = target.createdAt
+              ..createdAt = targetEntry.createdAt
               ..updatedAt = DateTime.now();
 
             await isar.savePassword(entry);
             updatedCount++;
             importedPasswords++;
           } else {
-            if (hasConflict && conflictResolution == ImportConflictResolution.keepBoth) {
-              final titleKey = data.containsKey('title') ? 'title' : 'service';
+            // keepBoth or (skip and content changed) or no conflict
+            final titleConflicts = existingByTitle != null || (lowerTitle.isNotEmpty && existingPassTitleMap.containsKey(lowerTitle));
+            if (hasConflict && (conflictResolution == ImportConflictResolution.keepBoth || titleConflicts)) {
               data[titleKey] = rawTitle.isNotEmpty ? '$rawTitle (Imported)' : 'Password (Imported)';
             }
 
@@ -1023,6 +1101,13 @@ class BackupService {
 
             await isar.savePassword(entry);
             importedPasswords++;
+
+            if (hasConflict) {
+              existingPassMap[newUuid] = entry;
+              final newTitle = (data[titleKey] as String? ?? '').trim().toLowerCase();
+              if (newTitle.isNotEmpty) existingPassTitleMap[newTitle] = entry;
+              existingPassHashMap[newUuid] = _computeContentHash(data);
+            }
           }
         } catch (_) {}
       }
@@ -1044,34 +1129,43 @@ class BackupService {
           final rawTitle = (data['title'] as String? ?? '').trim();
           final lowerTitle = rawTitle.toLowerCase();
           final incomingUuid = item['uuid'] as String? ?? const Uuid().v4();
+          final incomingHash = _computeContentHash(data);
 
           final existingByUuid = existingPageMap[incomingUuid];
           final existingByTitle = lowerTitle.isNotEmpty ? existingPageTitleMap[lowerTitle] : null;
           final hasConflict = existingByUuid != null || existingByTitle != null;
 
-          if (hasConflict && conflictResolution == ImportConflictResolution.skip) {
-            skippedCount++;
-            continue;
+          final target = existingByUuid ?? existingByTitle;
+          final isExactDuplicate = target != null && existingPageHashMap[target.uuid] == incomingHash;
+
+          if (conflictResolution == ImportConflictResolution.skip) {
+            if (isExactDuplicate) {
+              skippedCount++;
+              continue;
+            }
+            // Option A: If content has been updated, do not skip — import as copy.
           }
 
           if (hasConflict && conflictResolution == ImportConflictResolution.overwrite) {
-            final target = existingByUuid ?? existingByTitle!;
+            final targetEntry = target!;
             final enc = crypto.encryptVaultItem(data, activeKek);
             final entry = PageEntry()
-              ..id = target.id
-              ..uuid = target.uuid
+              ..id = targetEntry.id
+              ..uuid = targetEntry.uuid
               ..encryptedData = enc['encryptedData']!
               ..encryptedItemKey = enc['encryptedItemKey']!
               ..itemKeyIV = enc['itemKeyIV']!
               ..dataIV = enc['dataIV']!
-              ..createdAt = target.createdAt
+              ..createdAt = targetEntry.createdAt
               ..updatedAt = DateTime.now();
 
             await isar.savePage(entry);
             updatedCount++;
             importedPages++;
           } else {
-            if (hasConflict && conflictResolution == ImportConflictResolution.keepBoth) {
+            // keepBoth or (skip and content changed) or no conflict
+            final titleConflicts = existingByTitle != null || (lowerTitle.isNotEmpty && existingPageTitleMap.containsKey(lowerTitle));
+            if (hasConflict && (conflictResolution == ImportConflictResolution.keepBoth || titleConflicts)) {
               data['title'] = rawTitle.isNotEmpty ? '$rawTitle (Imported)' : 'Untitled (Imported)';
             }
 
@@ -1088,6 +1182,13 @@ class BackupService {
 
             await isar.savePage(entry);
             importedPages++;
+
+            if (hasConflict) {
+              existingPageMap[newUuid] = entry;
+              final newTitle = (data['title'] as String? ?? '').trim().toLowerCase();
+              if (newTitle.isNotEmpty) existingPageTitleMap[newTitle] = entry;
+              existingPageHashMap[newUuid] = _computeContentHash(data);
+            }
           }
         } catch (_) {}
       }
