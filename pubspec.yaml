@@ -27,7 +27,7 @@ dependencies:
   pointycastle: ^4.0.0
 
   # Secure key storage (Android Keystore / iOS Keychain)
-  flutter_secure_storage: ^10.3.1
+  flutter_secure_storage: ^11.0.0
 
   # Biometric authentication
   local_auth: ^3.0.2
@@ -72,7 +72,7 @@ dependencies:
   flutter_slidable: ^4.0.3
 
   # PIN entry widget
-  pin_code_fields: ^8.0.1
+  pin_code_fields: ^9.4.0
 
   # SVG icons
   flutter_svg: ^2.0.10+1

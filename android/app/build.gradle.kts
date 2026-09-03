@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.cyphor_vault"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = "28.2.13676358"
 
     compileOptions {

@@ -17,7 +17,7 @@ class PinEntryScreen extends ConsumerStatefulWidget {
 
 class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
     with SingleTickerProviderStateMixin {
-  final _controller = TextEditingController();
+  final _pinController = PinInputController();
   late final AnimationController _shakeController;
   bool _loading = false;
   String? _error;
@@ -33,7 +33,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pinController.dispose();
     _shakeController.dispose();
     super.dispose();
   }
@@ -65,7 +65,7 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
       setState(() => _loading = false);
     } else {
       final remaining = PINService.maxAttempts - pinService.failedAttempts;
-      _controller.clear();
+      _pinController.clear();
       setState(() {
         _error = pinService.isLocked
             ? 'Too many failed attempts.'
@@ -120,29 +120,20 @@ class _PinEntryScreenState extends ConsumerState<PinEntryScreen>
                 controller: _shakeController,
                 onComplete: (c) => c.reset(),
                 effects: const [ShakeEffect(hz: 4, offset: Offset(6, 0))],
-                child: PinCodeTextField(
-                  appContext: context,
+                child: MaterialPinField(
                   length: 6,
-                  controller: _controller,
-                  autoDisposeControllers: false,
+                  pinController: _pinController,
                   obscureText: true,
-                  obscuringCharacter: '●',
-                  animationType: AnimationType.fade,
-                  keyboardType: TextInputType.number,
                   enabled: !pinService.isLocked && !_loading,
-                  pinTheme: PinTheme(
-                    shape: PinCodeFieldShape.box,
+                  theme: MaterialPinTheme(
+                    shape: MaterialPinShape.outlined,
+                    cellSize: const Size(44, 52),
                     borderRadius: BorderRadius.circular(10),
-                    fieldHeight: 52,
-                    fieldWidth: 44,
-                    activeFillColor: context.palette.surfaceLight,
-                    inactiveFillColor: context.palette.surface,
-                    selectedFillColor: context.palette.surfaceLight,
-                    activeColor: context.palette.primary,
-                    inactiveColor: context.palette.border,
-                    selectedColor: context.palette.primary,
+                    fillColor: context.palette.surface,
+                    focusedFillColor: context.palette.surfaceLight,
+                    focusedBorderColor: context.palette.primary,
+                    borderColor: context.palette.border,
                   ),
-                  enableActiveFill: true,
                   onChanged: (_) => setState(() => _error = null),
                   onCompleted: _onPINComplete,
                 ),

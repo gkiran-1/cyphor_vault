@@ -40,7 +40,7 @@ class _RestoreBackupScreenState extends ConsumerState<RestoreBackupScreen> {
   // Unlock mode: 0 = PIN, 1 = Recovery Phrase
   int _unlockMode = 0;
 
-  final _pinCtrl = TextEditingController();
+  final _pinCtrl = PinInputController();
   final _phraseCtrl = TextEditingController();
 
   @override
@@ -528,26 +528,19 @@ class _RestoreBackupScreenState extends ConsumerState<RestoreBackupScreen> {
                   TextStyle(color: context.palette.textSecondary, fontSize: 13),
             ),
             const SizedBox(height: 14),
-            PinCodeTextField(
-              appContext: context,
+            MaterialPinField(
               length: 6,
-              controller: _pinCtrl,
-              autoDisposeControllers: false,
+              pinController: _pinCtrl,
               obscureText: true,
-              keyboardType: TextInputType.number,
-              pinTheme: PinTheme(
-                shape: PinCodeFieldShape.box,
+              theme: MaterialPinTheme(
+                shape: MaterialPinShape.outlined,
+                cellSize: const Size(42, 48),
                 borderRadius: BorderRadius.circular(8),
-                fieldHeight: 48,
-                fieldWidth: 42,
-                activeFillColor: context.palette.surfaceLight,
-                inactiveFillColor: context.palette.background,
-                selectedFillColor: context.palette.surfaceLight,
-                activeColor: context.palette.primary,
-                inactiveColor: context.palette.border,
-                selectedColor: context.palette.primary,
+                fillColor: context.palette.background,
+                focusedFillColor: context.palette.surfaceLight,
+                focusedBorderColor: context.palette.primary,
+                borderColor: context.palette.border,
               ),
-              enableActiveFill: true,
               onChanged: (_) {},
             ),
           ] else ...[
